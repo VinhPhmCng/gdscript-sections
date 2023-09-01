@@ -1,0 +1,201 @@
+[gd_scene load_steps=2 format=3 uid="uid://djl3cfxiqbiq1"]
+
+[ext_resource type="Script" path="res://addons/gdscript_sections/dialog.gd" id="1_cvg1e"]
+
+[node name="Dialog" type="Window"]
+title = "GDScript Sections"
+initial_position = 4
+size = Vector2i(452, 362)
+exclusive = true
+script = ExtResource("1_cvg1e")
+
+[node name="Background" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="Background"]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="Main" type="VBoxContainer" parent="Background/MarginContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Background/MarginContainer/Main"]
+layout_mode = 2
+
+[node name="AddSection" type="LineEdit" parent="Background/MarginContainer/Main/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Section Name"
+
+[node name="AddButton" type="Button" parent="Background/MarginContainer/Main/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = " Add "
+
+[node name="Panel" type="Panel" parent="Background/MarginContainer/Main"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Background/MarginContainer/Main/Panel"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Item" type="HBoxContainer" parent="Background/MarginContainer/Main/Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="Background/MarginContainer/Main/Panel/VBoxContainer/Item"]
+layout_mode = 2
+text = "Goto"
+
+[node name="LineEdit" type="LineEdit" parent="Background/MarginContainer/Main/Panel/VBoxContainer/Item"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Button2" type="Button" parent="Background/MarginContainer/Main/Panel/VBoxContainer/Item"]
+layout_mode = 2
+text = "Del"
+
+[node name="Item2" type="HBoxContainer" parent="Background/MarginContainer/Main/Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="Background/MarginContainer/Main/Panel/VBoxContainer/Item2"]
+layout_mode = 2
+text = "Goto"
+
+[node name="LineEdit" type="Label" parent="Background/MarginContainer/Main/Panel/VBoxContainer/Item2"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "TEST"
+
+[node name="Button2" type="Button" parent="Background/MarginContainer/Main/Panel/VBoxContainer/Item2"]
+layout_mode = 2
+text = "Del"
+
+[node name="Item3" type="HBoxContainer" parent="Background/MarginContainer/Main/Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="Background/MarginContainer/Main/Panel/VBoxContainer/Item3"]
+layout_mode = 2
+text = "Goto"
+
+[node name="LineEdit" type="LineEdit" parent="Background/MarginContainer/Main/Panel/VBoxContainer/Item3"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Button2" type="Button" parent="Background/MarginContainer/Main/Panel/VBoxContainer/Item3"]
+layout_mode = 2
+text = "Del"
+
+[node name="TreeItems" type="Tree" parent="Background/MarginContainer/Main/Panel"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+columns = 3
+column_titles_visible = true
+hide_root = true
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="Background/MarginContainer/Main"]
+layout_mode = 2
+theme_override_constants/separation = 50
+alignment = 1
+
+[node name="Show" type="Button" parent="Background/MarginContainer/Main/HBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+button_pressed = true
+text = "Show"
+
+[node name="Disable" type="Button" parent="Background/MarginContainer/Main/HBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Disable"
+
+[node name="EnablePrompt" type="CenterContainer" parent="Background/MarginContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Background/MarginContainer/EnablePrompt"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_constants/separation = 25
+
+[node name="EnablePromptLabel" type="Label" parent="Background/MarginContainer/EnablePrompt/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Enable the plugin for the script \"name.gd\"?"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Background/MarginContainer/EnablePrompt/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 50
+alignment = 1
+
+[node name="EnableCancel" type="Button" parent="Background/MarginContainer/EnablePrompt/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Cancel"
+
+[node name="Enable" type="Button" parent="Background/MarginContainer/EnablePrompt/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Enable"
+
+[node name="DisablePrompt" type="CenterContainer" parent="Background/MarginContainer"]
+visible = false
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Background/MarginContainer/DisablePrompt"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_constants/separation = 25
+
+[node name="Label" type="Label" parent="Background/MarginContainer/DisablePrompt/VBoxContainer"]
+layout_mode = 2
+text = "Disable the plugin for the script \"name.gd\"?
+(Will delete all sections)"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Background/MarginContainer/DisablePrompt/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 50
+alignment = 1
+
+[node name="DisableCancel" type="Button" parent="Background/MarginContainer/DisablePrompt/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Cancel"
+
+[node name="DisableAccept" type="Button" parent="Background/MarginContainer/DisablePrompt/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Disable"
+
+[connection signal="text_submitted" from="Background/MarginContainer/Main/HBoxContainer/AddSection" to="." method="_on_AddSection_text_submitted"]
+[connection signal="pressed" from="Background/MarginContainer/Main/HBoxContainer/AddButton" to="." method="_on_AddButton_pressed"]
+[connection signal="pressed" from="Background/MarginContainer/Main/HBoxContainer2/Disable" to="." method="_on_Disable_pressed"]
+[connection signal="pressed" from="Background/MarginContainer/EnablePrompt/VBoxContainer/HBoxContainer/Enable" to="." method="_on_Enable_pressed"]
+[connection signal="pressed" from="Background/MarginContainer/DisablePrompt/VBoxContainer/HBoxContainer/DisableCancel" to="." method="_on_DisableCancel_pressed"]
+[connection signal="pressed" from="Background/MarginContainer/DisablePrompt/VBoxContainer/HBoxContainer/DisableAccept" to="." method="_on_DisableAccept_pressed"]

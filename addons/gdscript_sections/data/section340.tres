@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="Section" load_steps=2 format=3 uid="uid://b46e1nyjeulgi"]
+
+[ext_resource type="Script" path="res://addons/gdscript_sections/section.gd" id="1_w8tco"]
+
+[resource]
+script = ExtResource("1_w8tco")
+text = "123"
+location = 5

@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="Section" load_steps=2 format=3 uid="uid://prcrx6agdmk1"]
+
+[ext_resource type="Script" path="res://addons/gdscript_sections/section.gd" id="1_5ou41"]
+
+[resource]
+script = ExtResource("1_5ou41")
+text = "rwar"
+location = 0
