@@ -15,14 +15,14 @@ var script_subcontainer: Control
 var file_system_dock: FileSystemDock
 
 var dialog: Window = Dialog.instantiate()
+## The display of sections of the active script
 var tree: Tree
 var section_button := Button.new()
 var data_helper: DataHelper = DataHelper.new()
 
 
+## Initialization of the plugin goes here.
 func _enter_tree() -> void:
-	# Initialization of the plugin goes here.
-	
 	# Getting editor components
 	Godot_base_control = get_editor_interface().get_base_control()
 	script_editor = get_editor_interface().get_script_editor()
@@ -47,8 +47,8 @@ func _enter_tree() -> void:
 	dialog.get_node("%EnableCancel").pressed.connect(_on_Dialog_close_requested)
 	dialog.get_node("%DisableAccept").pressed.connect(_on_Dialog_close_requested)
 	
-	# Handle reading from and writing to file logic
 	# Visibility has been handled in dialog.gd 
+	# Handles reading from and writing to file
 	dialog.get_node("%Enable").pressed.connect(_on_Dialog_Enable_pressed)
 	dialog.get_node("%DisableAccept").pressed.connect(_on_Dialog_DisableAccept_pressed)
 	
@@ -67,8 +67,6 @@ func _enter_tree() -> void:
 	section_button.focus_mode = Control.FOCUS_NONE
 	section_button.toggle_mode = true
 	section_button.button_pressed = false
-	
-	# Handling toggle
 	section_button.toggled.connect(_on_section_button_toggled)
 	
 	# TreeItems
@@ -87,19 +85,16 @@ func _enter_tree() -> void:
 		section_button.icon = _get_editor_icon("FileList")
 	)
 	
-	
-	# Handling data
+	# Reading all enabled scripts and the unique ID
 	if data_helper:
 		data_helper.read()
 		data_helper.id_helper.read()
-	
 	return
 	
 
+## Clean-up of the plugin goes here.
 func _exit_tree() -> void:
-	# Clean-up of the plugin goes here.
-	
-	# Saving data
+	# Safeguard saving of data
 	if data_helper:
 		data_helper.write()
 		data_helper.id_helper.write()
@@ -112,11 +107,12 @@ func _exit_tree() -> void:
 	return
 
 
+## Saves data when the project is saved or closed
 func _save_external_data() -> void:
 	if data_helper:
-		printt("save_external", data_helper._data)
+#		printt("save_external", data_helper._data)
 #		prints("ID:", data_helper.id_helper.get_new_id())
-		print()
+#		print()
 		data_helper.write()
 		data_helper.id_helper.write()
 	return
@@ -138,6 +134,8 @@ func _get_editor_style(name: StringName) -> StyleBox:
 	)
 
 
+## Returns True if the currently active script is a GDScript (possibly CSharpScript too?)[br]
+## Returns False if it is other types (.txt, .json, etc.) or a documentation
 func _is_active_script() -> bool:
 	if not script_editor.get_current_editor():
 		return false
@@ -148,19 +146,19 @@ func _is_active_script() -> bool:
 		return false
 
 
-## TreeItems
+## Updates to display sections of the active script
 func _update_TreeItems(tree: Tree) -> void:
 	var sections: Array[Section] = []
-	for path in data_helper.get_sections_path(script_editor.get_current_script().get_path()):
+	for path in data_helper.get_sections_paths(script_editor.get_current_script().get_path()):
 		var sec := Section.get_from_disk(path)
-		printt("GETFROMDISK", sec.get_path(), sec.text, sec.location)
+#		printt("GETFROMDISK", sec.get_path(), sec.text, sec.location)
 		sections.append(Section.get_from_disk(path))
 	
 	tree.clear()
 	var root := tree.create_item()
 	
 	for section in sections:
-		printt(section.get_path(), section.text, section.location)
+#		printt(section.get_path(), section.text, section.location)
 		_add_section_to_tree(tree, section)
 	return
 
@@ -177,7 +175,6 @@ func _add_section_to_tree(tree: Tree, section: Section) -> void:
 	item.set_text(1, section.text)
 	item.set_editable(1, true)
 	tree.set_column_expand(1, true)
-#	item.set_metadata(1, section.text)
 	
 	item.add_button(2, _get_editor_icon("Remove"))
 	tree.set_column_expand(2, false)
@@ -187,26 +184,23 @@ func _add_section_to_tree(tree: Tree, section: Section) -> void:
 
 
 # Signal callbacks
+## Updates data to in-editor file manipulation
+## (Move or Rename)
 func _on_FileSystemDock_files_moved(old_file: String, new_file: String) -> void:
-	print("FILES MOVED")
-	printt(old_file, new_file)
-	print()
-	
 	if data_helper.is_script_enabled(old_file):
 		data_helper.update_script(old_file, new_file)
 	return
 	
 
+## Updates data to in-editor file manipulation
+## (Remove)
 func _on_FileSystemDock_file_removed(file: String) -> void:
-	print("FILE REMOVED")
-	printt(file)
-	print()
-	
 	if data_helper.is_script_enabled(file):
 		data_helper.disable_script(file)
 	return
 
 
+## Shows or hides the main UI (Dialog)
 func _on_section_button_toggled(button_pressed: bool) -> void:
 	if button_pressed:
 		if not _is_active_script():
@@ -226,12 +220,14 @@ func _on_section_button_toggled(button_pressed: bool) -> void:
 	return
 
 
+## De-toggles UI button when Dialog is closed
 func _on_Dialog_close_requested() -> void:
 	if section_button:
 		section_button.button_pressed = false
 	return
 
 
+## Enables the active script
 func _on_Dialog_Enable_pressed() -> void:
 	data_helper.enable_script(
 		script_editor.get_current_script().get_path()
@@ -240,6 +236,7 @@ func _on_Dialog_Enable_pressed() -> void:
 	return
 
 
+## Disables the active script
 func _on_Dialog_DisableAccept_pressed() -> void:
 	data_helper.disable_script(
 		script_editor.get_current_script().get_path()
@@ -247,12 +244,18 @@ func _on_Dialog_DisableAccept_pressed() -> void:
 	return
 
 
+## Incomplete
+## Adds a new section to the enabled active script[br]
+## Emitted when AddSection (LineEdit) submits or AddButton is pressed 
 func _on_Dialog_section_added(text: String) -> void:
 	var section := Section.new()
+	
 	section.text = text
-	section.location = 5
+	section.location = 5 # Todo
+	# IMPORTANT - there can be only one data helper throughout the plugin
+	# Otherwise, data manipulation gets weird
 	section.data_helper = data_helper
-	printt("ADDED", section.get_path(), section.text, section.location)
+#	printt("ADDED", section.get_path(), section.text, section.location)
 	
 	var section_path := section.save_to_disk()
 	
@@ -265,6 +268,7 @@ func _on_Dialog_section_added(text: String) -> void:
 	return
 
 
+## Handles Goto buttons or Delete buttons of sections
 func _on_TreeItems_button_clicked(item: TreeItem, column: int, id: int, mouse_button_index: int) -> void:
 	if not mouse_button_index == MOUSE_BUTTON_LEFT:
 		return
@@ -287,6 +291,7 @@ func _on_TreeItems_button_clicked(item: TreeItem, column: int, id: int, mouse_bu
 	return
 
 
+## Handles renaming of sections
 func _on_TreeItems_item_edited() -> void:
 	var item := tree.get_edited()
 	var path := item.get_metadata(2)

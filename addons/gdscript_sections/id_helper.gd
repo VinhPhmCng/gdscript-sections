@@ -2,6 +2,8 @@
 #class_name
 extends Resource
 
+## A script that helps seperate unique ID generation from DataHelper
+
 const PATH := "res://addons/gdscript_sections/data/id.dat"
 
 
@@ -9,12 +11,13 @@ var _id: int = -1:
 	get = get_new_id
 
 
+## Returns a new unique ID
 func get_new_id() -> int:
 	_id += 1
 	return _id
 
-#________________ PRIVATE METHODS ______________#
 
+## Reads from disk - id.dat - to _id
 func read() -> void:
 	var file := FileAccess.open(PATH, FileAccess.READ)
 	if not file:
@@ -25,7 +28,8 @@ func read() -> void:
 	file.close()
 	return
 	
-	
+
+## Writes _id to disk - id.dat
 func write() -> void:
 	var file := FileAccess.open(PATH, FileAccess.WRITE)
 	if _id != -1:

@@ -2,17 +2,14 @@
 class_name Section
 extends Resource
 
+## A custom resource that stores data of a Section
+
 const DataHelper := preload("res://addons/gdscript_sections/data_helper.gd")
 
 @export var text: String = ""
 @export var location: int 
 
-var data_helper: DataHelper
-
-#func _init(new_text: String, new_location: int) -> void:
-#	text = new_text
-#	location = new_location
-#	return
+var data_helper: DataHelper # There should only be one instance of this
 
 
 func update_to_disk() -> void:
@@ -20,13 +17,16 @@ func update_to_disk() -> void:
 	return
 
 
+## Saves newly to disk with a unique path and
+## returns the save path 
 func save_to_disk() -> String:
 	var path := create_save_path()
 	ResourceSaver.save(self, path)
 #	printt("SAVETODISK", self.get_path(), self.text, self.location)
 	return path
 	
-	
+
+## Returns a unique save path
 func create_save_path() -> String:
 	var path := data_helper.DATA_FOLDER
 	path = path.path_join("section")
@@ -34,12 +34,14 @@ func create_save_path() -> String:
 	path += ".tres"
 	return path
 	
-	
+
+## Delete resource at path
 static func remove_from_disk(path: String) -> void:
 	if FileAccess.file_exists(path):
 		DirAccess.remove_absolute(path)
 	return
 
 
+## Return Section resource at path
 static func get_from_disk(path: String) -> Section:
 	return ResourceLoader.load(path, "Section")
