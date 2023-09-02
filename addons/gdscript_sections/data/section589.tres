@@ -1,8 +1,0 @@
-[gd_resource type="Resource" script_class="Section" load_steps=2 format=3 uid="uid://cp1s1qw5rhknl"]
-
-[ext_resource type="Script" path="res://addons/gdscript_sections/section.gd" id="1_f5j4l"]
-
-[resource]
-script = ExtResource("1_f5j4l")
-text = "test"
-location = 366

@@ -35,6 +35,9 @@ func enable_script(path: String) -> void:
 
 ## Removes a path from existing keys
 func disable_script(path: String) -> void:
+	for section in get_sections_paths(path):
+		Section.remove_from_disk(section)
+	
 	_data.erase(path)
 	return
 
@@ -67,16 +70,6 @@ func get_sections(script_path: String, do_sort_by_location: bool) -> Array[Secti
 		return false
 	)
 	return sections
-	
-
-func is_valid_location(script_path: String, what: int) -> bool:
-	var locations: Array[int] = []
-	for section in get_sections(script_path, false):
-		locations.append(section.location)
-	
-	if what in locations:
-		return false
-	return true
 
 
 ## Adds a Section's path (value) to an enabled script's path (key)

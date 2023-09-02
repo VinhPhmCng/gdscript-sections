@@ -42,6 +42,7 @@ placeholder_text = "Section Name"
 [node name="AddButton" type="Button" parent="Background/MarginContainer/Main/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 0
 text = " Add "
 
 [node name="Panel" type="Panel" parent="Background/MarginContainer/Main"]
@@ -113,7 +114,10 @@ grow_horizontal = 2
 grow_vertical = 2
 columns = 3
 column_titles_visible = true
+allow_search = false
+enable_recursive_folding = false
 hide_root = true
+scroll_horizontal_enabled = false
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="Background/MarginContainer/Main"]
 layout_mode = 2
@@ -123,13 +127,20 @@ alignment = 1
 [node name="Show" type="Button" parent="Background/MarginContainer/Main/HBoxContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 0
 toggle_mode = true
 button_pressed = true
 text = "Show"
 
+[node name="SyncTheme" type="Button" parent="Background/MarginContainer/Main/HBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Sync Theme"
+
 [node name="Disable" type="Button" parent="Background/MarginContainer/Main/HBoxContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 0
 text = "Disable"
 
 [node name="EnablePrompt" type="CenterContainer" parent="Background/MarginContainer"]
@@ -155,11 +166,13 @@ alignment = 1
 [node name="EnableCancel" type="Button" parent="Background/MarginContainer/EnablePrompt/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 0
 text = "Cancel"
 
 [node name="Enable" type="Button" parent="Background/MarginContainer/EnablePrompt/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 0
 text = "Enable"
 
 [node name="DisablePrompt" type="CenterContainer" parent="Background/MarginContainer"]
@@ -186,11 +199,13 @@ alignment = 1
 [node name="DisableCancel" type="Button" parent="Background/MarginContainer/DisablePrompt/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 0
 text = "Cancel"
 
 [node name="DisableAccept" type="Button" parent="Background/MarginContainer/DisablePrompt/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 0
 text = "Disable"
 
 [connection signal="text_submitted" from="Background/MarginContainer/Main/HBoxContainer/AddSection" to="." method="_on_AddSection_text_submitted"]

@@ -22,7 +22,7 @@ func update_to_disk() -> void:
 func save_to_disk() -> String:
 	var path := create_save_path()
 	ResourceSaver.save(self, path)
-#	printt("SAVETODISK", self.get_path(), self.text, self.location)
+#	printt("SAVETODISK", self.get_path(), self.text, self.s)
 	return path
 	
 

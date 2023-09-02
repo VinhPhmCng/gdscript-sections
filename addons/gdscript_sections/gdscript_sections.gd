@@ -15,6 +15,8 @@ var script_editor: ScriptEditor
 var script_subcontainer: Control
 var file_system_dock: FileSystemDock
 
+var active_code_edit: CodeEdit
+
 var dialog: Window = Dialog.instantiate()
 var display: Control = OverlayDisplay.instantiate()
 ## The display of sections of the active script
@@ -25,24 +27,23 @@ var data_helper: DataHelper = DataHelper.new()
 
 ## Initialization of the plugin goes here.
 func _enter_tree() -> void:
-	# Getting editor components
+	# Reads all enabled scripts and the unique ID
+	if data_helper:
+		data_helper.read()
+		data_helper.id_helper.read()
+	
+	# Gets editor components
 	Godot_base_control = get_editor_interface().get_base_control()
 	script_editor = get_editor_interface().get_script_editor()
 	script_subcontainer = script_editor.get_child(0)
 	file_system_dock = get_editor_interface().get_file_system_dock()
-	
-	# Script-editing-related signal
-	script_editor.editor_script_changed.connect(_on_ScriptEditor_editor_script_changed)
-	_on_ScriptEditor_editor_script_changed(script_editor.get_current_script())
-	
-	_get_active_code_edit().text_changed.connect(_on_active_code_edit_text_changed)
 	
 	# File-related signals
 	file_system_dock.files_moved.connect(_on_FileSystemDock_files_moved)
 	file_system_dock.file_removed.connect(_on_FileSystemDock_file_removed)
 	
 	
-	# Setting up dialog
+	# Sets up dialog
 	dialog.title = "GDSCript Sections"
 	dialog.gui_embed_subwindows = true
 	dialog.hide()
@@ -52,29 +53,36 @@ func _enter_tree() -> void:
 	dialog.section_added.connect(_on_Dialog_section_added)
 	
 	dialog.close_requested.connect(_on_Dialog_close_requested)
+	dialog.window_input.connect(_on_Dialog_window_input)
 	dialog.get_node("%EnableCancel").pressed.connect(_on_Dialog_close_requested)
 	dialog.get_node("%DisableAccept").pressed.connect(_on_Dialog_close_requested)
+	dialog.get_node("%SyncTheme").pressed.connect(_on_Dialog_close_requested)
 	
 	# Visibility has been handled in dialog.gd 
-	# Handles reading from and writing to file
+	## Handles reading from and writing to file
 	dialog.get_node("%Enable").pressed.connect(_on_Dialog_Enable_pressed)
 	dialog.get_node("%DisableAccept").pressed.connect(_on_Dialog_DisableAccept_pressed)
 	
+	## Handles toggling display
+	dialog.get_node("%Show").toggled.connect(_on_Dialog_Show_toggled)
+	## Handles syncing theme
+	dialog.get_node("%SyncTheme").pressed.connect(_on_Dialog_SyncTheme_pressed)
 	
 	# Dialog's Background
 	var background: PanelContainer = dialog.get_node("Background")
 	background.add_theme_stylebox_override("panel", _get_editor_style("Content"))
 	
-	# Adding addon's button to Script tab
+	# Adds addon's button to Script tab
 	var menu_container := script_subcontainer.get_child(0)
 	menu_container.add_child(section_button)
 	
+	# Configures Tree
 	section_button.icon = _get_editor_icon("FileList")
 	section_button.text = "Sections"
 	section_button.tooltip_text = "Shortcut: Ctrl+U"
 	section_button.focus_mode = Control.FOCUS_NONE
 	section_button.toggle_mode = true
-	section_button.button_pressed = false
+	section_button.set_pressed(false)
 	section_button.toggled.connect(_on_section_button_toggled)
 	
 	# TreeItems
@@ -87,16 +95,20 @@ func _enter_tree() -> void:
 	tree.button_clicked.connect(_on_TreeItems_button_clicked)
 	tree.item_edited.connect(_on_TreeItems_item_edited)
 	
+	# Script-editing-related signal
+	script_editor.editor_script_changed.connect(_on_ScriptEditor_editor_script_changed)
+	_on_ScriptEditor_editor_script_changed(script_editor.get_current_script()) # Trigger for first time enabling
+
 	# Syncing theme
 	Godot_base_control.theme_changed.connect(func():
 		background.add_theme_stylebox_override("panel", _get_editor_style("Content"))
 		section_button.icon = _get_editor_icon("FileList")
+		dialog.get_node("%Show").set_pressed(false)
 	)
 	
-	# Reading all enabled scripts and the unique ID
-	if data_helper:
-		data_helper.read()
-		data_helper.id_helper.read()
+	# OverlayDisplay's signals
+	display.section_display_relocated.connect(_on_SectionDisplay_relocated)
+	
 	return
 	
 
@@ -121,9 +133,6 @@ func _exit_tree() -> void:
 ## Saves data when the project is saved or closed
 func _save_external_data() -> void:
 	if data_helper:
-#		printt("save_external", data_helper._data)
-#		prints("ID:", data_helper.id_helper.get_new_id())
-#		print()
 		data_helper.write()
 		data_helper.id_helper.write()
 	return
@@ -165,14 +174,54 @@ func _get_active_code_edit() -> CodeEdit:
 	)
 
 
-func _get_active_code_edit_last_line(do_newline: bool) -> int:
-	var active_code_edit := _get_active_code_edit()
-	var line_count := active_code_edit.get_line_count()
-	
-	if do_newline:
-		active_code_edit.insert_line_at(line_count - 1, "")
+func _get_active_code_edit_height() -> float:
+	return (
+		_get_active_code_edit().get_line_count()
+		*
+		_get_active_code_edit().get_line_height()
+	)
+
+
+func _disconnect_signals_previous_code_edit() -> void:
+	if not active_code_edit:
+		return
 		
-	return line_count
+	if active_code_edit.gui_input.is_connected(_on_active_code_edit_gui_input):
+		active_code_edit.gui_input.disconnect(_on_active_code_edit_gui_input)
+		
+	if active_code_edit.text_changed.is_connected(_on_active_code_edit_height_changed):
+		active_code_edit.text_changed.disconnect(_on_active_code_edit_height_changed)
+		
+#	if active_code_edit.get_v_scroll_bar().changed.is_connected(_on_active_code_edit_VScrollBar_changed):
+#		active_code_edit.get_v_scroll_bar().changed.disconnect(_on_active_code_edit_VScrollBar_changed)
+
+	if active_code_edit.get_v_scroll_bar().value_changed.is_connected(_on_active_code_edit_VScrollBar_value_changed):
+		active_code_edit.get_v_scroll_bar().value_changed.disconnect(_on_active_code_edit_VScrollBar_value_changed)
+	return
+
+
+func _connect_signals_active_code_edit() -> void:
+	if not active_code_edit:
+		return
+	
+	active_code_edit.gui_input.connect(_on_active_code_edit_gui_input)
+	active_code_edit.text_changed.connect(_on_active_code_edit_height_changed)
+#	active_code_edit.get_v_scroll_bar().changed.connect(_on_active_code_edit_VScrollBar_changed)
+	active_code_edit.get_v_scroll_bar().value_changed.connect(_on_active_code_edit_VScrollBar_value_changed)
+	return
+
+
+func _update_ui_and_display() -> void:
+	var sections: Array[Section] = []
+	if dialog.get_node("%Show").button_pressed:
+		sections = data_helper.get_sections(script_editor.get_current_script().get_path(), false)
+		
+	display.update(
+		_get_active_code_edit(),
+		sections
+	)
+	_update_TreeItems(tree)
+	return
 
 
 ## Updates to display sections of the active script
@@ -193,26 +242,21 @@ func _update_TreeItems(tree: Tree) -> void:
 func _add_section_to_tree(tree: Tree, section: Section) -> void:
 	var root := tree.get_root()
 	var item := tree.create_item(root)
+	if not item:
+		return
 	
-#	item.add_button(0, _get_editor_icon("ArrowRight"))
+	item.add_button(0, _get_editor_icon("ArrowRight"))
 	tree.set_column_expand(0, false)
-	tree.set_column_custom_minimum_width(0, 35)
-	item.set_cell_mode(0, TreeItem.CELL_MODE_RANGE)
-	item.set_range_config(
-		0, 1,
-		_get_active_code_edit_last_line(false),
-		1, false
-	)
-	item.set_range(0, section.location)
-	item.set_selectable(0, true)
-	item.set_editable(0, true)
+	tree.set_column_custom_minimum_width(0, 25)
+	item.set_selectable(0, false)
 	item.set_metadata(0, section.location)
-	
-	item.add_button(1, _get_editor_icon("ArrowLeft"), -1, false, "Goto")
+
 	item.set_text(1, section.text)
 	item.set_selectable(1, true)
 	item.set_editable(1, true)
+	item.set_autowrap_mode(1, TextServer.AUTOWRAP_WORD_SMART)
 	tree.set_column_expand(1, true)
+	tree.set_column_clip_content(1, true)
 	
 	item.add_button(2, _get_editor_icon("Remove"))
 	tree.set_column_expand(2, false)
@@ -248,7 +292,6 @@ func _on_section_button_toggled(button_pressed: bool) -> void:
 		
 		if data_helper.is_script_enabled(script_editor.get_current_script().get_path()):
 			dialog.show_main()
-			_update_TreeItems(tree)
 		else:
 			dialog.prompt_enable_script(script_editor.get_current_script().get_path())
 			
@@ -259,10 +302,17 @@ func _on_section_button_toggled(button_pressed: bool) -> void:
 	return
 
 
+func _on_Dialog_window_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed:
+		if OS.get_keycode_string(event.get_key_label_with_modifiers()) == "Ctrl+U":
+			section_button.set_pressed(false)
+	return
+
+
 ## De-toggles UI button when Dialog is closed
 func _on_Dialog_close_requested() -> void:
 	if section_button:
-		section_button.button_pressed = false
+		section_button.set_pressed(false)
 	return
 
 
@@ -283,6 +333,33 @@ func _on_Dialog_DisableAccept_pressed() -> void:
 	return
 
 
+func _on_Dialog_Show_toggled(button_pressed: bool) -> void:
+	var sections: Array[Section] = []
+	
+	if button_pressed:
+		sections = data_helper.get_sections(script_editor.get_current_script().get_path(), false)
+		_on_active_code_edit_height_changed()
+
+	display.update(
+		_get_active_code_edit(),
+		sections
+	)
+	return
+
+
+func _on_Dialog_SyncTheme_pressed() -> void:
+	var sections: Array[Section] = []
+	if dialog.get_node("%Show").button_pressed:
+		sections = data_helper.get_sections(script_editor.get_current_script().get_path(), false)
+		_on_active_code_edit_height_changed()
+		
+	display.update(
+		_get_active_code_edit(),
+		sections
+	)
+	return
+
+
 ## Incomplete
 ## Adds a new section to the enabled active script[br]
 ## Emitted when AddSection (LineEdit) submits or AddButton is pressed 
@@ -290,11 +367,16 @@ func _on_Dialog_section_added(text: String) -> void:
 	var section := Section.new()
 	
 	section.text = text
-	section.location = _get_active_code_edit_last_line(true)
+	section.location = (
+		_get_active_code_edit().get_caret_line()
+#		*
+#		_get_active_code_edit().get_line_height()
+	)
+	_get_active_code_edit().center_viewport_to_caret()
+	
 	# IMPORTANT - there can be only one data helper throughout the plugin
 	# Otherwise, data manipulation gets weird
 	section.data_helper = data_helper
-#	printt("ADDED", section.get_path(), section.text, section.location)
 	
 	var section_path := section.save_to_disk()
 	
@@ -303,7 +385,7 @@ func _on_Dialog_section_added(text: String) -> void:
 		section_path
 	)
 
-	_update_TreeItems(tree)
+	_update_ui_and_display()
 	return
 
 
@@ -313,17 +395,19 @@ func _on_TreeItems_button_clicked(item: TreeItem, column: int, id: int, mouse_bu
 		return
 	
 	match column:
-		0:
-			dialog.goto(item.get_metadata(0))
+		0: # Goto
+			_get_active_code_edit().get_v_scroll_bar().value = (
+				item.get_metadata(0)
+			)
 			
-		2:
+		2: # Deletion
 			data_helper.delete_section_path(
 				script_editor.get_current_script().get_path(),
 				item.get_metadata(2)
 			)
 			
 			Section.remove_from_disk(item.get_metadata(2))
-			_update_TreeItems(tree)
+			_update_ui_and_display()
 			
 		_:
 			pass
@@ -336,48 +420,116 @@ func _on_TreeItems_item_edited() -> void:
 	var path := item.get_metadata(2)
 	var section := Section.get_from_disk(path)
 	
-	# Setting location
-	if data_helper.is_valid_location(
-		script_editor.get_current_script().get_path(),
-		item.get_range(0)
-	):
-		section.location = item.get_range(0)
-	else:
-		printerr("GDScript Sections: A section with that location already exists.")
-		item.set_range(0, section.location)
-	
 	# Setting text
 	section.text = item.get_text(1)
 	
 	section.update_to_disk()
-	_update_TreeItems(tree)
+	_update_ui_and_display()
 	return
 	
 	
 func _on_ScriptEditor_editor_script_changed(script: Script) -> void:
+#	printt("OPEN:", script.get_path())
 	if not _is_active_script(): # Safeguard (unnecessary?)
 		return
 		
-	display.update(
-		_get_active_code_edit(),
-		data_helper.get_sections(script_editor.get_current_script().get_path(), false)
+	_disconnect_signals_previous_code_edit()
+	active_code_edit = _get_active_code_edit()
+	_connect_signals_active_code_edit()
+	
+#	printt("TEST", _get_active_code_edit().get_v_scroll_bar().value)
+	_on_active_code_edit_height_changed()
+#	printt(
+#		script_editor.get_current_script().get_path(),
+#		data_helper._data,
+#		data_helper.get_sections_paths(script_editor.get_current_script().get_path()),
+#		data_helper.get_sections(script_editor.get_current_script().get_path(), false),
+#	)
+
+	_update_ui_and_display()
+	
+	# Emulates scroll
+	_on_active_code_edit_VScrollBar_value_changed(
+		floorf(_get_active_code_edit().get_v_scroll_bar().value)
+		*
+		_get_active_code_edit().get_line_height()
 	)
 	return
 
 
-func _on_active_code_edit_text_changed() -> void:
-	
-	# This only accounts for when max line INCREASES
-	for item in tree.get_root().get_children():
-		item.set_range_config(
-			0, 1,
-			_get_active_code_edit_last_line(false),
-			1, false
-		)
+func _on_active_code_edit_gui_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed:
+		if OS.get_keycode_string(event.get_key_label_with_modifiers()) == "Ctrl+U":
+			section_button.set_pressed(true)
 	return
 
 
+func _on_active_code_edit_height_changed() -> void:
+	var scroll: ScrollContainer = display.get_node("ScrollContainer")
+	var sections_display: Control = display.get_node("%SectionsDisplay")
+	sections_display.set_custom_minimum_size(Vector2(
+		sections_display.get_custom_minimum_size().x,
+		_get_active_code_edit_height()
+	))
+	return
 
 
+#func _on_active_code_edit_VScrollBar_changed() -> void:
+#	var scroll: ScrollContainer = display.get_node("ScrollContainer")
+#	var sections_display: Control = display.get_node("%SectionsDisplay")
+#	return
+	
+
+func _on_active_code_edit_VScrollBar_value_changed(value: float) -> void:
+	var scroll: ScrollContainer = display.get_node("ScrollContainer")
+	var sections_display: Control = display.get_node("%SectionsDisplay")
+	
+#	printt("BEFORE SCROLL", scroll.get_v_scroll_bar().value)
+#	printt(_get_active_code_edit().get_v_scroll_bar().value, value)
+	scroll.get_v_scroll_bar().value = (
+		floorf(value)
+		*
+		_get_active_code_edit().get_line_height()
+	)
+#	printt("SCROLLING", scroll.get_v_scroll_bar().value)
 
 
+#	printt(
+#		"DISPLAY:",
+#		sections_display.get_custom_minimum_size(),
+#		scroll.get_v_scroll_bar().min_value,
+#		scroll.get_v_scroll_bar().max_value,
+#		scroll.get_v_scroll_bar().value,
+#	)
+#	printt(
+#		"GODOT:",
+#		_get_active_code_edit().get_v_scroll_bar().min_value,
+#		_get_active_code_edit().get_v_scroll_bar().max_value,
+#		_get_active_code_edit().get_v_scroll_bar().value,
+#	)
+#	print()
+	
+#	print(_get_active_code_edit().get_v_scroll())
+	
+	return
+
+
+func _on_SectionDisplay_relocated(which: Control, event: InputEventMouseMotion) -> void:
+	var total_relative_y := which.get_meta("total_relative_y")
+	total_relative_y += event.relative.y
+	
+	while abs(total_relative_y) >= _get_active_code_edit().get_line_height():
+		if total_relative_y > 0:
+			which.position.y += _get_active_code_edit().get_line_height()
+			total_relative_y -= _get_active_code_edit().get_line_height()
+		else:
+			which.position.y -= _get_active_code_edit().get_line_height()
+			total_relative_y += _get_active_code_edit().get_line_height()
+		
+	which.set_meta("total_relative_y", total_relative_y)
+	
+	var section: Section = which.get_meta("section_resource")
+#	printt(section, section.get_path())
+	section.location = which.position.y / _get_active_code_edit().get_line_height()
+	section.update_to_disk()
+	return

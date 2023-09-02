@@ -12,6 +12,7 @@ signal section_added(text: String)
 @onready var add_section: LineEdit = %AddSection
 @onready var enable_prompt_label: Label = %EnablePromptLabel
 
+
 # EnableCancel is handled by section_button in gdscript_sections.gd
 # For visibility, only need to handle Enable and Disable
 
