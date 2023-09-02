@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="Section" load_steps=2 format=3 uid="uid://dx5w3lbkgk27x"]
+
+[ext_resource type="Script" path="res://addons/gdscript_sections/section.gd" id="1_5s25c"]
+
+[resource]
+script = ExtResource("1_5s25c")
+text = "tee"
+location = 364

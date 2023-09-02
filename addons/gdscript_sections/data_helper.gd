@@ -52,6 +52,33 @@ func get_sections_paths(script_path: String) -> Array:
 	return _data.get(script_path, [])
 
 
+func get_sections(script_path: String, do_sort_by_location: bool) -> Array[Section]:
+	var sections: Array[Section] = []
+	for path in get_sections_paths(script_path):
+		sections.append(Section.get_from_disk(path))
+	
+	if not do_sort_by_location:
+		return sections
+	
+	# Does sort
+	sections.sort_custom(func(a: Section, b: Section):
+		if a.location < b.location:
+			return true
+		return false
+	)
+	return sections
+	
+
+func is_valid_location(script_path: String, what: int) -> bool:
+	var locations: Array[int] = []
+	for section in get_sections(script_path, false):
+		locations.append(section.location)
+	
+	if what in locations:
+		return false
+	return true
+
+
 ## Adds a Section's path (value) to an enabled script's path (key)
 func add_section_path(script_path: String, section_path: String) -> void:
 	var sections: Array = _data.get(script_path, [])

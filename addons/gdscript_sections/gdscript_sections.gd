@@ -7,6 +7,7 @@ extends EditorPlugin
 const DATA_FOLDER := "res://addons/gdscript_sections/data/"
 
 const Dialog := preload("res://addons/gdscript_sections/dialog.tscn")
+const OverlayDisplay := preload("res://addons/gdscript_sections/overlay_display.tscn")
 const DataHelper := preload("res://addons/gdscript_sections/data_helper.gd")
 
 var Godot_base_control: Control
@@ -15,6 +16,7 @@ var script_subcontainer: Control
 var file_system_dock: FileSystemDock
 
 var dialog: Window = Dialog.instantiate()
+var display: Control = OverlayDisplay.instantiate()
 ## The display of sections of the active script
 var tree: Tree
 var section_button := Button.new()
@@ -28,6 +30,12 @@ func _enter_tree() -> void:
 	script_editor = get_editor_interface().get_script_editor()
 	script_subcontainer = script_editor.get_child(0)
 	file_system_dock = get_editor_interface().get_file_system_dock()
+	
+	# Script-editing-related signal
+	script_editor.editor_script_changed.connect(_on_ScriptEditor_editor_script_changed)
+	_on_ScriptEditor_editor_script_changed(script_editor.get_current_script())
+	
+	_get_active_code_edit().text_changed.connect(_on_active_code_edit_text_changed)
 	
 	# File-related signals
 	file_system_dock.files_moved.connect(_on_FileSystemDock_files_moved)
@@ -99,6 +107,9 @@ func _exit_tree() -> void:
 		data_helper.write()
 		data_helper.id_helper.write()
 	
+	if display:
+		display.queue_free()
+	
 	if dialog:
 		dialog.queue_free()
 	
@@ -146,19 +157,35 @@ func _is_active_script() -> bool:
 		return false
 
 
+func _get_active_code_edit() -> CodeEdit:
+	return (
+		script_editor
+		.get_current_editor()
+		.get_base_editor()
+	)
+
+
+func _get_active_code_edit_last_line(do_newline: bool) -> int:
+	var active_code_edit := _get_active_code_edit()
+	var line_count := active_code_edit.get_line_count()
+	
+	if do_newline:
+		active_code_edit.insert_line_at(line_count - 1, "")
+		
+	return line_count
+
+
 ## Updates to display sections of the active script
 func _update_TreeItems(tree: Tree) -> void:
-	var sections: Array[Section] = []
-	for path in data_helper.get_sections_paths(script_editor.get_current_script().get_path()):
-		var sec := Section.get_from_disk(path)
-#		printt("GETFROMDISK", sec.get_path(), sec.text, sec.location)
-		sections.append(Section.get_from_disk(path))
-	
+	var sections: Array[Section] = data_helper.get_sections(
+		script_editor.get_current_script().get_path(),
+		true
+	)
+
 	tree.clear()
 	var root := tree.create_item()
-	
+
 	for section in sections:
-#		printt(section.get_path(), section.text, section.location)
 		_add_section_to_tree(tree, section)
 	return
 
@@ -167,18 +194,30 @@ func _add_section_to_tree(tree: Tree, section: Section) -> void:
 	var root := tree.get_root()
 	var item := tree.create_item(root)
 	
-	item.add_button(0, _get_editor_icon("ArrowRight"))
+#	item.add_button(0, _get_editor_icon("ArrowRight"))
 	tree.set_column_expand(0, false)
-	item.set_selectable(0, false)
+	tree.set_column_custom_minimum_width(0, 35)
+	item.set_cell_mode(0, TreeItem.CELL_MODE_RANGE)
+	item.set_range_config(
+		0, 1,
+		_get_active_code_edit_last_line(false),
+		1, false
+	)
+	item.set_range(0, section.location)
+	item.set_selectable(0, true)
+	item.set_editable(0, true)
 	item.set_metadata(0, section.location)
 	
+	item.add_button(1, _get_editor_icon("ArrowLeft"), -1, false, "Goto")
 	item.set_text(1, section.text)
+	item.set_selectable(1, true)
 	item.set_editable(1, true)
 	tree.set_column_expand(1, true)
 	
 	item.add_button(2, _get_editor_icon("Remove"))
 	tree.set_column_expand(2, false)
 	item.set_selectable(2, false)
+	item.set_text_alignment(2, HORIZONTAL_ALIGNMENT_CENTER)
 	item.set_metadata(2, section.get_path())
 	return
 
@@ -251,7 +290,7 @@ func _on_Dialog_section_added(text: String) -> void:
 	var section := Section.new()
 	
 	section.text = text
-	section.location = 5 # Todo
+	section.location = _get_active_code_edit_last_line(true)
 	# IMPORTANT - there can be only one data helper throughout the plugin
 	# Otherwise, data manipulation gets weird
 	section.data_helper = data_helper
@@ -297,6 +336,48 @@ func _on_TreeItems_item_edited() -> void:
 	var path := item.get_metadata(2)
 	var section := Section.get_from_disk(path)
 	
+	# Setting location
+	if data_helper.is_valid_location(
+		script_editor.get_current_script().get_path(),
+		item.get_range(0)
+	):
+		section.location = item.get_range(0)
+	else:
+		printerr("GDScript Sections: A section with that location already exists.")
+		item.set_range(0, section.location)
+	
+	# Setting text
 	section.text = item.get_text(1)
+	
 	section.update_to_disk()
+	_update_TreeItems(tree)
 	return
+	
+	
+func _on_ScriptEditor_editor_script_changed(script: Script) -> void:
+	if not _is_active_script(): # Safeguard (unnecessary?)
+		return
+		
+	display.update(
+		_get_active_code_edit(),
+		data_helper.get_sections(script_editor.get_current_script().get_path(), false)
+	)
+	return
+
+
+func _on_active_code_edit_text_changed() -> void:
+	
+	# This only accounts for when max line INCREASES
+	for item in tree.get_root().get_children():
+		item.set_range_config(
+			0, 1,
+			_get_active_code_edit_last_line(false),
+			1, false
+		)
+	return
+
+
+
+
+
+

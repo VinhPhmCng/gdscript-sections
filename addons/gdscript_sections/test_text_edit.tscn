@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://jpvfbujed7wx"]
+
+[ext_resource type="Script" path="res://addons/gdscript_sections/test_text_edit.gd" id="1_ii0uv"]
+
+[node name="TestTextEdit" type="CodeEdit"]
+offset_left = 73.0
+offset_top = 45.0
+offset_right = 507.0
+offset_bottom = 251.0
+text = "test"
+gutters_draw_line_numbers = true
+script = ExtResource("1_ii0uv")
