@@ -40,7 +40,7 @@ func update(new_parent: CodeEdit, sections: Array[Section]) -> void:
 		section_display.get_node("%Text").text = "   " + section.text
 		section_display.get_node("%Text").add_theme_font_size_override(
 			"font_size",
-			new_parent.get_theme_font_size("font_size")
+			new_parent.get_theme_font_size("font_size") + 2
 		)
 		section_display.position.y = section.location * new_parent.get_line_height()
 		section_display.get_node("PaddingGutters").custom_minimum_size.x = new_parent.get_total_gutter_width()
