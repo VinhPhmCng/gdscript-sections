@@ -136,7 +136,6 @@ func _save_external_data() -> void:
 	return
 
 
-# Private functions
 
 ## Returns Godot editor's icon
 func _get_editor_icon(name: StringName) -> Texture2D:
@@ -273,7 +272,6 @@ func _add_section_to_tree(tree: Tree, section: Section) -> void:
 	return
 
 
-# Signal callbacks
 
 ## Updates data when a in-editor file is manipulated
 ## (Move or Rename)

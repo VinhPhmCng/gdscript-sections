@@ -4,5 +4,5 @@
 
 [resource]
 script = ExtResource("1_mjycc")
-text = "Private function"
-location = 274
+text = "Signal callbacks"
+location = 273
