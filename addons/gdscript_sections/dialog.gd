@@ -1,24 +1,21 @@
 @tool
 extends Window
 
+## The addon's main User Interface
 
 signal section_added(text: String)
-
 
 @onready var main: VBoxContainer = $Background/MarginContainer/Main
 @onready var enable_prompt: CenterContainer = $Background/MarginContainer/EnablePrompt
 @onready var disable_prompt: CenterContainer = $Background/MarginContainer/DisablePrompt
-
 @onready var add_section: LineEdit = %AddSection
 @onready var enable_prompt_label: Label = %EnablePromptLabel
-
-
-# EnableCancel is handled by section_button in gdscript_sections.gd
-# For visibility, only need to handle Enable and Disable
+@onready var disable_prompt_label: Label = %DisablePromptLabel
 
 ## From EnablePrompt to Main
 func show_main() -> void:
 	enable_prompt.hide()
+	disable_prompt.hide()
 	main.show()
 	return
 
@@ -26,7 +23,7 @@ func show_main() -> void:
 ## From DisablePrompt (Accept) to EnablePromp[br]
 ## Or when encounter a disabled script 
 func prompt_enable_script(path: String) -> void:
-	enable_prompt_label.text = "Enable the plugin for the script \"%s\"?" % path
+	enable_prompt_label.text = "ENABLE the plugin for the script?\n\"%s\"" % path
 	
 	disable_prompt.hide()
 	main.hide()
@@ -34,22 +31,44 @@ func prompt_enable_script(path: String) -> void:
 	return
 
 
+## From Main to DisablePrompt
+func prompt_disable_script(path: String) -> void:
+	disable_prompt_label.text = "DISABLE the plugin for the script?\n\"%s\"\n(Will permanently delete all sections)" % path
+	
+	enable_prompt.hide()
+	main.hide()
+	disable_prompt.show()
+	return
+
+
+## Updates prompts' font sizes
+func set_font_size(to: int) -> void:
+	enable_prompt_label.add_theme_font_size_override("font_size", to)
+	disable_prompt_label.add_theme_font_size_override("font_size", to)
+	return
+
+
+# Handles buttons' signals - concerning visibility only
+
 ## From EnablePrompt to Main
 func _on_Enable_pressed() -> void:
 	enable_prompt.hide()
+	disable_prompt.hide()
 	main.show()
 	return
 
 
 ## From Main to DisablePrompt
 func _on_Disable_pressed() -> void:
-	disable_prompt.show()
+	enable_prompt.hide()
 	main.hide()
+	disable_prompt.show()
 	return
 
 
 ## From DisablePrompt to Main
 func _on_DisableCancel_pressed() -> void:
+	enable_prompt.hide()
 	disable_prompt.hide()
 	main.show()
 	return

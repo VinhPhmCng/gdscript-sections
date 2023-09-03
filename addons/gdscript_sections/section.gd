@@ -7,11 +7,13 @@ extends Resource
 const DataHelper := preload("res://addons/gdscript_sections/data_helper.gd")
 
 @export var text: String = ""
-@export var location: int 
+## The approximate line number in a CodeEdit
+@export var location: int
 
 var data_helper: DataHelper # There should only be one instance of this
 
 
+## Updates itself to disk and does nothing else
 func update_to_disk() -> void:
 	ResourceSaver.save(self, self.get_path())
 	return
@@ -35,13 +37,13 @@ func create_save_path() -> String:
 	return path
 	
 
-## Delete resource at path
+## Deletes resource at "path"
 static func remove_from_disk(path: String) -> void:
 	if FileAccess.file_exists(path):
 		DirAccess.remove_absolute(path)
 	return
 
 
-## Return Section resource at path
+## Returns Section resource at "path"
 static func get_from_disk(path: String) -> Section:
 	return ResourceLoader.load(path, "Section")

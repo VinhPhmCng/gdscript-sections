@@ -124,11 +124,10 @@ layout_mode = 2
 theme_override_constants/separation = 50
 alignment = 1
 
-[node name="Show" type="Button" parent="Background/MarginContainer/Main/HBoxContainer2"]
+[node name="Show" type="CheckButton" parent="Background/MarginContainer/Main/HBoxContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-toggle_mode = true
 button_pressed = true
 text = "Show"
 
@@ -184,7 +183,8 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 theme_override_constants/separation = 25
 
-[node name="Label" type="Label" parent="Background/MarginContainer/DisablePrompt/VBoxContainer"]
+[node name="DisablePromptLabel" type="Label" parent="Background/MarginContainer/DisablePrompt/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Disable the plugin for the script \"name.gd\"?
 (Will delete all sections)"

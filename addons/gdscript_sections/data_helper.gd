@@ -4,15 +4,11 @@ extends Resource
 
 ## A script that helps seperate data manipulation from the main UI
 
-
 const DATA_FOLDER := "res://addons/gdscript_sections/data/"
 const DATA_PATH := "res://addons/gdscript_sections/data/data.json"
-
 const IDHelper := preload("res://addons/gdscript_sections/id_helper.gd")
 
-
 var id_helper: IDHelper = IDHelper.new()
-
 
 var _data: Dictionary
 
@@ -42,7 +38,7 @@ func disable_script(path: String) -> void:
 	return
 
 
-## Cuts value from old key to new key
+## Moves value from old key to new key
 func update_script(old_path: String, new_path) -> void:
 	var value := _data.get(old_path, [])
 	_data[new_path] = value
@@ -55,6 +51,7 @@ func get_sections_paths(script_path: String) -> Array:
 	return _data.get(script_path, [])
 
 
+## Returns Section resources (from disk) of an enabled script's path
 func get_sections(script_path: String, do_sort_by_location: bool) -> Array[Section]:
 	var sections: Array[Section] = []
 	for path in get_sections_paths(script_path):
@@ -88,7 +85,7 @@ func delete_section_path(script_path: String, section_path: String) -> void:
 	return
 
 
-## Reads from disk - data.json - to _data
+## Reads from disk (data.json) to _data
 func read() -> void:
 	var file := FileAccess.open(DATA_PATH, FileAccess.READ)
 	var content := file.get_as_text()
@@ -101,7 +98,7 @@ func read() -> void:
 	return
 
 
-## Write _data to disk - data.json
+## Write _data to disk (data.json)
 func write() -> void:
 	var file := FileAccess.open(DATA_PATH, FileAccess.WRITE)
 	

@@ -1,7 +1,9 @@
 {
+	"res://addons/gdscript_sections/data_helper.gd": [
+		"res://addons/gdscript_sections/data/section773.tres"
+	],
 	"res://addons/gdscript_sections/gdscript_sections.gd": [
-		"res://addons/gdscript_sections/data/section516.tres",
-		"res://addons/gdscript_sections/data/section517.tres"
+		"res://addons/gdscript_sections/data/section795.tres"
 	],
 	"res://addons/gdscript_sections/id_helper.gd": [
 		"res://addons/gdscript_sections/data/section616.tres"

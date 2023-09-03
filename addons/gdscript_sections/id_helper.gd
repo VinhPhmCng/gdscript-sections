@@ -6,7 +6,6 @@ extends Resource
 
 const PATH := "res://addons/gdscript_sections/data/id.dat"
 
-
 var _id: int = -1:
 	get = get_new_id
 
@@ -17,7 +16,7 @@ func get_new_id() -> int:
 	return _id
 
 
-## Reads from disk - id.dat - to _id
+## Reads from disk (id.dat) to _id
 func read() -> void:
 	var file := FileAccess.open(PATH, FileAccess.READ)
 	if not file:
@@ -29,7 +28,7 @@ func read() -> void:
 	return
 	
 
-## Writes _id to disk - id.dat
+## Writes _id to disk (id.dat)
 func write() -> void:
 	var file := FileAccess.open(PATH, FileAccess.WRITE)
 	if _id != -1:
