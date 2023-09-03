@@ -21,6 +21,7 @@ var tree: Tree # The UI display of sections of the active script
 var addon_button := Button.new()
 var data_helper: DataHelper = DataHelper.new()
 
+var _is_ctrl_held := false
 
 ## Initialization of the plugin goes here.
 func _enter_tree() -> void:
@@ -179,7 +180,7 @@ func _get_active_code_edit() -> CodeEdit:
 ## Returns the active CodeEdit's total height
 func _get_active_code_edit_height() -> float:
 	return (
-		_get_active_code_edit().get_line_count()
+		_get_active_code_edit().get_v_scroll_bar().max_value
 		*
 		_get_active_code_edit().get_line_height()
 	)
@@ -216,16 +217,21 @@ func _connect_signals_active_code_edit() -> void:
 
 ## Updates both UI display and OverlayDisplay
 func _update_ui_and_display() -> void:
+	_update_OverlayDisplay()
+	_update_TreeItems(tree)
+	return
+
+
+func _update_OverlayDisplay() -> void:
 	var sections: Array[Section] = []
 	if dialog.get_node("%Show").button_pressed:
 		sections = data_helper.get_sections(script_editor.get_current_script().get_path(), false)
-	
+		_on_active_code_edit_height_changed()
+		
 	display.update(
 		_get_active_code_edit(),
 		sections
 	)
-		
-	_update_TreeItems(tree)
 	return
 
 
@@ -310,9 +316,21 @@ func _on_addon_button_toggled(button_pressed: bool) -> void:
 
 ## Handles shortcuts when the main UI (Dialog) is shown
 func _on_Dialog_window_input(event: InputEvent) -> void:
+	if event is InputEventKey and OS.get_keycode_string(event.keycode) == "Ctrl":
+		if event.is_pressed():
+			_is_ctrl_held = true
+		else:
+			_is_ctrl_held = false
+
 	if event is InputEventKey and event.pressed:
-		if OS.get_keycode_string(event.get_key_label_with_modifiers()) == "Ctrl+U":
+		if OS.get_keycode_string(event.keycode) == "U" and _is_ctrl_held:
+			printt("WINDOW", OS.get_keycode_string(event.keycode), _is_ctrl_held)
 			addon_button.set_pressed(false) # Hides main UI (Dialog)
+			
+		if OS.get_keycode_string(event.keycode) == "J" and _is_ctrl_held:
+			dialog.get_node("%Show").set_pressed(
+				not dialog.get_node("%Show").button_pressed
+			)
 	return
 
 
@@ -343,6 +361,8 @@ func _on_Dialog_DisableAccept_pressed() -> void:
 	data_helper.disable_script(
 		script_editor.get_current_script().get_path()
 	)
+
+	_update_OverlayDisplay()
 	return
 
 
@@ -363,15 +383,7 @@ func _on_Dialog_Show_toggled(button_pressed: bool) -> void:
 
 ## Updates OverlayDisplay only
 func _on_Dialog_SyncTheme_pressed() -> void:
-	var sections: Array[Section] = []
-	if dialog.get_node("%Show").button_pressed:
-		sections = data_helper.get_sections(script_editor.get_current_script().get_path(), false)
-		_on_active_code_edit_height_changed()
-	
-	display.update(
-		_get_active_code_edit(),
-		sections
-	)
+	_update_OverlayDisplay()
 	return
 
 
@@ -453,7 +465,7 @@ func _on_ScriptEditor_editor_script_changed(script: Script) -> void:
 
 	# Emulates scroll
 	_on_active_code_edit_VScrollBar_value_changed(
-		floorf(_get_active_code_edit().get_v_scroll_bar().value)
+		_get_active_code_edit().get_v_scroll_bar().value
 		*
 		_get_active_code_edit().get_line_height()
 	)
@@ -462,11 +474,17 @@ func _on_ScriptEditor_editor_script_changed(script: Script) -> void:
 
 ## Handles shortcuts when the main UI (Dialog) is hidden
 func _on_active_code_edit_gui_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed:
-		if OS.get_keycode_string(event.get_key_label_with_modifiers()) == "Ctrl+U":
+	if event is InputEventKey and OS.get_keycode_string(event.keycode) == "Ctrl":
+		if event.is_pressed():
+			_is_ctrl_held = true
+		else:
+			_is_ctrl_held = false
+			
+	if event is InputEventKey and event.is_pressed():
+		if OS.get_keycode_string(event.keycode) == "U" and _is_ctrl_held:
 			addon_button.set_pressed(true)
 			
-		if OS.get_keycode_string(event.get_key_label_with_modifiers()) == "Ctrl+J":
+		if OS.get_keycode_string(event.keycode) == "J" and _is_ctrl_held:
 			dialog.get_node("%Show").set_pressed(
 				not dialog.get_node("%Show").button_pressed
 			)
@@ -477,10 +495,16 @@ func _on_active_code_edit_gui_input(event: InputEvent) -> void:
 func _on_active_code_edit_height_changed() -> void:
 	var scroll: ScrollContainer = display.get_node("ScrollContainer")
 	var sections_display: Control = display.get_node("%SectionsDisplay")
-	sections_display.set_custom_minimum_size(Vector2(
+	var new_size := Vector2(
 		sections_display.get_custom_minimum_size().x,
-		_get_active_code_edit_height()
-	))
+		_get_active_code_edit_height() + 500.0 # Fixes a bug where OverlayDisplay's VScrollBar has a weird upper-limit
+	)
+	
+	sections_display.set_custom_minimum_size(new_size)
+	sections_display.set_deferred("size", new_size)
+	scroll.get_v_scroll_bar().set_step(
+		_get_active_code_edit().get_v_scroll_bar().get_step()
+	)
 	return
 	
 
@@ -489,11 +513,9 @@ func _on_active_code_edit_VScrollBar_value_changed(value: float) -> void:
 	var scroll: ScrollContainer = display.get_node("ScrollContainer")
 	var sections_display: Control = display.get_node("%SectionsDisplay")
 	
-	scroll.get_v_scroll_bar().value = (
-		floorf(value)
-		*
-		_get_active_code_edit().get_line_height()
-	)
+	var new := value * _get_active_code_edit().get_line_height()
+	
+	scroll.get_v_scroll_bar().set_value(new)
 	return
 
 
@@ -515,4 +537,6 @@ func _on_SectionDisplay_relocated(which: Control, event: InputEventMouseMotion) 
 	var section: Section = which.get_meta("section_resource")
 	section.location = which.position.y / _get_active_code_edit().get_line_height()
 	section.update_to_disk()
+	
+	_update_TreeItems(tree)
 	return

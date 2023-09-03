@@ -10,7 +10,7 @@ extends Control
 signal section_display_relocated(which: Control, event: InputEventMouseMotion)
 
 ## The display of a single Section resource
-## Not to be confused with OverlayDisplay
+## Not to be confused with OverlayDisplay or SectionsDisplay
 const SectionDisplay := preload("res://addons/gdscript_sections/section_display.tscn")
 
 

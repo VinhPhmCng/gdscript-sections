@@ -3,11 +3,10 @@
 		"res://addons/gdscript_sections/data/section773.tres"
 	],
 	"res://addons/gdscript_sections/gdscript_sections.gd": [
-		"res://addons/gdscript_sections/data/section795.tres",
-		"res://addons/gdscript_sections/data/section1019.tres",
-		"res://addons/gdscript_sections/data/section1022.tres"
+		"res://addons/gdscript_sections/data/section1234.tres",
+		"res://addons/gdscript_sections/data/section1369.tres"
 	],
 	"res://addons/gdscript_sections/id_helper.gd": [
-		"res://addons/gdscript_sections/data/section616.tres"
+		"res://addons/gdscript_sections/data/section1033.tres"
 	]
 }
