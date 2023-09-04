@@ -100,7 +100,7 @@
 
 
 - Online
-  1. Dowload the ZIP archive from [link]().
+  1. Dowload the ZIP archive from [link](https://godotengine.org/asset-library/asset/2078).
 
   2. Import the folder `gdscript_sections/` into your Godot project's `addons/` folder (Godot v4.1).
 
