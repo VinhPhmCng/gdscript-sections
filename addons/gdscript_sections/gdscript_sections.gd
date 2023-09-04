@@ -462,11 +462,9 @@ func _on_ScriptEditor_editor_script_changed(script: Script) -> void:
 	_on_active_code_edit_height_changed()
 	_update_ui_and_display()
 
-	# Emulates scroll
+	# Syncs scroll
 	_on_active_code_edit_VScrollBar_value_changed(
 		_get_active_code_edit().get_v_scroll_bar().value
-		*
-		_get_active_code_edit().get_line_height()
 	)
 	return
 
