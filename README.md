@@ -25,13 +25,13 @@
 <br />
 <div align="center">
   <a href="https://github.com/VinhPhmCng/gdscript-sections">
-	<img src="addons/godot_style/pictures/logo.png" alt="Logo">
+	<img src="https://raw.githubusercontent.com/VinhPhmCng/gdscript-sections/master/addons/gdscript_sections/logo.png" alt="Logo">
   </a>
 
-<h2 align="center">Godot Style</h3>
+<h2 align="center">GDScript Sections</h3>
 
   <p align="center">
-	A small Godot addon that provides unofficial style guide in the editor
+	A small addon that improves organization and navigation when scripting in the Godot editor.
 	<br />
 	<br />
 	<br />
@@ -57,7 +57,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-![Godot Style Screenshot 1](addons/godot_style/pictures/godot_style.gif)
+![Godot Style Screenshot 1](https://raw.githubusercontent.com/VinhPhmCng/gdscript-sections/master/addons/gdscript_sections/showcase.gif)
 
 ### Built With
 
@@ -66,35 +66,24 @@
 
 ### Version: Godot 4.1
 
-- A personal project to learn the powerful Godot Engine
-- Aiming at: 
-  - Beginners who want to follow a prevalent style guide to develop good practices
-  - Beginners who want to learn more about Godot's `Resource`
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-### More details
-1. It makes use of `custom Resources`, which helps to quickly create new `SectionResources` and `ItemResources`.
+<!-- HOW TO USE -->
+## How To Use
 
-2. It's very scuffed lol.
-   - ~~Items can only contain pictures (Texture2D) as a quick and easy alternative - because I haven't a clue how to implement **markdown** in Godot. As a result,~~
-	 - ~~Updating contents frequently can be cumbersome.~~
-	 - ~~Limited capabilities~~
-	 - ~~Resizing the editor will not scale the pictures to maintain visibility -> Have to use scroll bars~~  
-	
-   - Scuffed **Markdown** implementation (Converting to BBCode for `RichTextLabel` and custom `Controls` - using [RegEx](https://docs.godotengine.org/en/stable/classes/class_regex.html))
-	 - [x] Most basic and widely used syntax
-	 - [ ] Lists (ordered and unordered) - prove difficult because lists in Markdown and BBCode are quite different
-	 - [ ] HTML tags - none yet  
+### CTRL+U
 
-   - Lacking UI elements helping to add new contents - partly because I want users to interact with the provided custom resources
+- Toggles visibility of the addon (Godot's script editor must have focus)
 
-3. The style guide provided ([STYLE_GUIDE.md](STYLE_GUIDE.md)) is a simplified composition of parts of different [materials](#materials).
+### CTRL+J
 
-4. There are two script templates located in [script_templates](script_templates). To integrate them into your project or editor, please refer to [Creating script templates](https://docs.godotengine.org/en/stable/tutorials/scripting/creating_script_templates.html).
+- Toggles visibility of sections (Godot's script editor must have focus)
 
+### To change text of a section
 
-### Customization
-- You can add your own `SectionResources` and `ItemResources` - please refer to [ADDING_YOUR_OWN.md](ADDING_YOUR_OWN.md)
+- Simply click on its current text
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -105,23 +94,22 @@
 
 ### Using Godot Asset Library
 - In-editor `AssetLib`
-  1. Search for `Godot Style` in Godot's in-editor `AssetLib` and press download 
+  1. Search for `GDScript Sections` in Godot's in-editor `AssetLib` and press download 
 
   2. Enable the addon in `Project -> Project Settings -> Plugins`
 
-		![Enabling-addon](addons/godot_style/pictures/enable_addon.PNG)
 
 - Online
-  1. Dowload the ZIP archive from [link](https://godotengine.org/asset-library/asset/2038).
+  1. Dowload the ZIP archive from [link]().
 
-  2. Import the folder `godot_style/` into your Godot project's `addons/` folder (Godot v4.1).
+  2. Import the folder `gdscript_sections/` into your Godot project's `addons/` folder (Godot v4.1).
 
   3. Enable the addon in `Project -> Project Settings -> Plugins`
 
 ### Manually
 1. Clone the repo OR download and extract the ZIP archive.
    ```sh
-   git clone https://github.com/VinhPhmCng/GodotStylePlugin.git
+   git clone https://github.com/VinhPhmCng/gdscript-sections.git
    ```
 
 2. Import the folder `godot_style/` into your Godot project's `addons/` folder (Godot v4.1).
@@ -131,28 +119,10 @@
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-<!-- MATERIALS -->
-## Materials
-
-1. [GDScript style guide](https://docs.godotengine.org/en/latest/tutorials/scripting/gdscript/gdscript_styleguide.html)
-2. [GDScript reference](https://docs.godotengine.org/en/latest/tutorials/scripting/gdscript/gdscript_basics.html#doc-gdscript)
-3. [GDQuest' guidelines](https://gdquest.gitbook.io/gdquests-guidelines/godot-gdscript-guidelines)
-4. [Calinou's style guide](https://github.com/Calinou/godot-style-guide)
-5. [emarino135's Reddit thread](https://www.reddit.com/r/godot/comments/yngda3/gdstyle_naming_convention_and_code_order_cheat/)
-6. [sepTN's post](https://godot.community/topic/27/gdscript-coding-conventions-best-practices-for-readable-and-maintainable-code)
-
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 <!-- CONTRIBUTE -->
 ## Contribute
 
-- Any contribution is much appreciated, especially regarding **Markdown** integration into Godot.
-
-- I highly recommend beginners who is learning programming in general, or Godot specifically, to make contributions if you'd like to.
-  - For example, you can add more style guide items that you think would help other beginners.
-  - Open PR to improve the addon.
+- Any contribution is much appreciated.
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
