@@ -222,7 +222,7 @@ func _update_ui_and_display() -> void:
 
 
 func _update_OverlayDisplay() -> void:
-	var sections: Array[Section] = []
+	var sections: Array = []
 	if dialog.get_node("%Show").button_pressed:
 		sections = data_helper.get_sections(script_editor.get_current_script().get_path(), false)
 		_on_active_code_edit_height_changed()
@@ -236,7 +236,7 @@ func _update_OverlayDisplay() -> void:
 
 ## Updates to display sections of the active script
 func _update_TreeItems(tree: Tree) -> void:
-	var sections: Array[Section] = data_helper.get_sections(
+	var sections: Array = data_helper.get_sections(
 		script_editor.get_current_script().get_path(),
 		true
 	)
@@ -367,7 +367,7 @@ func _on_Dialog_DisableAccept_pressed() -> void:
 
 ## Updates OverlayDisplay only
 func _on_Dialog_Show_toggled(button_pressed: bool) -> void:
-	var sections: Array[Section] = []
+	var sections: Array = []
 	
 	if button_pressed:
 		sections = data_helper.get_sections(script_editor.get_current_script().get_path(), false)

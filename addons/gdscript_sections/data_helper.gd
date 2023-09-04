@@ -52,8 +52,8 @@ func get_sections_paths(script_path: String) -> Array:
 
 
 ## Returns Section resources (from disk) of an enabled script's path
-func get_sections(script_path: String, do_sort_by_location: bool) -> Array[Section]:
-	var sections: Array[Section] = []
+func get_sections(script_path: String, do_sort_by_location: bool) -> Array:
+	var sections: Array = []
 	for path in get_sections_paths(script_path):
 		sections.append(Section.get_from_disk(path))
 	

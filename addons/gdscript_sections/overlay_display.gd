@@ -16,7 +16,7 @@ const SectionDisplay := preload("res://addons/gdscript_sections/section_display.
 
 ## Relocates itself to a new parent and
 ## displays the new SectionDisplays
-func update(new_parent: CodeEdit, sections: Array[Section]) -> void:
+func update(new_parent: CodeEdit, sections: Array) -> void:
 	if get_parent():
 		get_parent().remove_child(self)
 	new_parent.add_child(self)
