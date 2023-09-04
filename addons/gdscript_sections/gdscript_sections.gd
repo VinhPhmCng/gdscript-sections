@@ -194,9 +194,12 @@ func _disconnect_signals_previous_code_edit() -> void:
 	if active_code_edit.gui_input.is_connected(_on_active_code_edit_gui_input):
 		active_code_edit.gui_input.disconnect(_on_active_code_edit_gui_input)
 		
-	if active_code_edit.text_changed.is_connected(_on_active_code_edit_height_changed):
-		active_code_edit.text_changed.disconnect(_on_active_code_edit_height_changed)
+	if active_code_edit.lines_edited_from.is_connected(_on_active_code_edit_line_edited):
+		active_code_edit.lines_edited_from.disconnect(_on_active_code_edit_line_edited)
 
+	if active_code_edit.get_v_scroll_bar().changed.is_connected(_on_active_code_edit_height_changed):
+		active_code_edit.get_v_scroll_bar().changed.disconnect(_on_active_code_edit_height_changed)
+		
 	if active_code_edit.get_v_scroll_bar().value_changed.is_connected(_on_active_code_edit_VScrollBar_value_changed):
 		active_code_edit.get_v_scroll_bar().value_changed.disconnect(_on_active_code_edit_VScrollBar_value_changed)
 	return
@@ -208,8 +211,8 @@ func _connect_signals_active_code_edit() -> void:
 		return
 	
 	active_code_edit.gui_input.connect(_on_active_code_edit_gui_input)
-	active_code_edit.text_changed.connect(_on_active_code_edit_height_changed)
-#	active_code_edit.get_v_scroll_bar().changed.connect(_on_active_code_edit_VScrollBar_changed)
+	active_code_edit.lines_edited_from.connect(_on_active_code_edit_line_edited)
+	active_code_edit.get_v_scroll_bar().changed.connect(_on_active_code_edit_height_changed)
 	active_code_edit.get_v_scroll_bar().value_changed.connect(_on_active_code_edit_VScrollBar_value_changed)
 	return
 
@@ -221,6 +224,8 @@ func _update_ui_and_display() -> void:
 	return
 
 
+## Updates the OverlayDisplay to display sections of the active script
+## If Show is de-toggled, clear OverlayDisplay
 func _update_OverlayDisplay() -> void:
 	var sections: Array = []
 	if dialog.get_node("%Show").button_pressed:
@@ -234,7 +239,7 @@ func _update_OverlayDisplay() -> void:
 	return
 
 
-## Updates to display sections of the active script
+## Updates the main UI (Dialog) to display sections of the active script
 func _update_TreeItems(tree: Tree) -> void:
 	var sections: Array = data_helper.get_sections(
 		script_editor.get_current_script().get_path(),
@@ -302,6 +307,7 @@ func _on_addon_button_toggled(button_pressed: bool) -> void:
 			return
 		
 		if data_helper.is_script_enabled(script_editor.get_current_script().get_path()):
+			_update_TreeItems(tree)
 			dialog.show_main()
 		else:
 			dialog.prompt_enable_script(script_editor.get_current_script().get_path())
@@ -320,10 +326,10 @@ func _on_Dialog_window_input(event: InputEvent) -> void:
 			_is_ctrl_held = true
 		else:
 			_is_ctrl_held = false
+		return
 
 	if event is InputEventKey and event.pressed:
 		if OS.get_keycode_string(event.keycode) == "U" and _is_ctrl_held:
-			printt("WINDOW", OS.get_keycode_string(event.keycode), _is_ctrl_held)
 			addon_button.set_pressed(false) # Hides main UI (Dialog)
 			
 		if OS.get_keycode_string(event.keycode) == "J" and _is_ctrl_held:
@@ -476,6 +482,7 @@ func _on_active_code_edit_gui_input(event: InputEvent) -> void:
 			_is_ctrl_held = true
 		else:
 			_is_ctrl_held = false
+		return
 			
 	if event is InputEventKey and event.is_pressed():
 		if OS.get_keycode_string(event.keycode) == "U" and _is_ctrl_held:
@@ -488,13 +495,14 @@ func _on_active_code_edit_gui_input(event: InputEvent) -> void:
 	return
 
 
-## Updates the height of the Control that is responsible for current SectionDisplays
+## Updates the height of the container of current SectionDisplays
+## Syncs it to that of the active CodeEdit
 func _on_active_code_edit_height_changed() -> void:
 	var scroll: ScrollContainer = display.get_node("ScrollContainer")
 	var sections_display: Control = display.get_node("%SectionsDisplay")
 	var new_size := Vector2(
 		sections_display.get_custom_minimum_size().x,
-		_get_active_code_edit_height() + 500.0 # Fixes a bug where OverlayDisplay's VScrollBar has a weird upper-limit
+		_get_active_code_edit_height() + 500.0 # Adds a little extra to fix a bug where OverlayDisplay's VScrollBar has a weird upper-limit
 	)
 	
 	sections_display.set_custom_minimum_size(new_size)
@@ -505,7 +513,7 @@ func _on_active_code_edit_height_changed() -> void:
 	return
 	
 
-## Syncs scrolling of active CodeEdit to that of OverlayDisplay
+## Syncs scrolling of OverlayDisplay to that of active CodeEdit
 func _on_active_code_edit_VScrollBar_value_changed(value: float) -> void:
 	var scroll: ScrollContainer = display.get_node("ScrollContainer")
 	var sections_display: Control = display.get_node("%SectionsDisplay")
@@ -516,24 +524,46 @@ func _on_active_code_edit_VScrollBar_value_changed(value: float) -> void:
 	return
 
 
+## Moves sections of active script accordingly when the user adds or removes line(s)
+## Hasn't accounted for relocation of lines using ALT and ARROW KEYS yet
+func _on_active_code_edit_line_edited(from_line: int, to_line: int) -> void:
+	if from_line == to_line:
+		# User is either typing on the same line
+		# or moving line(s) with ALT and Arrow keys (how to handle this?)
+		return
+		
+	var sections: Array = data_helper.get_sections(
+		script_editor.get_current_script().get_path(),
+		true
+	)
+	
+	for section in sections:
+		if section.location < from_line:
+			continue
+		
+		section.location += to_line - from_line
+		section.update_to_disk()
+	
+	_update_OverlayDisplay()
+	return
+
+
 ## Handles user's relocation of a SectionDisplay
 func _on_SectionDisplay_relocated(which: Control, event: InputEventMouseMotion) -> void:
+	var section: Section = which.get_meta("section_resource")
 	var total_relative_y := which.get_meta("total_relative_y") # Accumulation of previous events
 	total_relative_y += event.relative.y
 	
 	while abs(total_relative_y) >= _get_active_code_edit().get_line_height():
 		if total_relative_y > 0:
+			section.location += 1
 			which.position.y += _get_active_code_edit().get_line_height()
 			total_relative_y -= _get_active_code_edit().get_line_height()
 		else:
+			section.location -= 1
 			which.position.y -= _get_active_code_edit().get_line_height()
 			total_relative_y += _get_active_code_edit().get_line_height()
-		
-	which.set_meta("total_relative_y", total_relative_y)
+	which.set_meta("total_relative_y", total_relative_y) # The remainder
 	
-	var section: Section = which.get_meta("section_resource")
-	section.location = which.position.y / _get_active_code_edit().get_line_height()
 	section.update_to_disk()
-	
-	_update_TreeItems(tree)
 	return
