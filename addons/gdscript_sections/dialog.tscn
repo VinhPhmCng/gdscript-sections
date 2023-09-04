@@ -121,7 +121,7 @@ scroll_horizontal_enabled = false
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="Background/MarginContainer/Main"]
 layout_mode = 2
-theme_override_constants/separation = 50
+theme_override_constants/separation = 75
 alignment = 1
 
 [node name="Show" type="CheckButton" parent="Background/MarginContainer/Main/HBoxContainer2"]
@@ -134,6 +134,7 @@ text = "Show"
 
 [node name="SyncTheme" type="Button" parent="Background/MarginContainer/Main/HBoxContainer2"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 text = "Sync Theme"
 

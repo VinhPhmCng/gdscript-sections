@@ -21,7 +21,6 @@ var tree: Tree # The UI display of sections of the active script
 var addon_button := Button.new()
 var data_helper: DataHelper = DataHelper.new()
 
-var _is_ctrl_held := false
 
 ## Initialization of the plugin goes here.
 func _enter_tree() -> void:
@@ -103,7 +102,7 @@ func _enter_tree() -> void:
 	Godot_base_control.theme_changed.connect(func():
 		background.add_theme_stylebox_override("panel", _get_editor_style("Content"))
 		addon_button.icon = _get_editor_icon("FileList")
-		dialog.get_node("%Show").set_pressed(false)
+		_update_OverlayDisplay()
 	)
 	
 	# OverlayDisplay's signals
@@ -113,7 +112,6 @@ func _enter_tree() -> void:
 
 ## Clean-up of the plugin goes here.
 func _exit_tree() -> void:
-	# Ensures saving of data
 	if data_helper:
 		data_helper.write()
 		data_helper.id_helper.write()
@@ -230,8 +228,8 @@ func _update_OverlayDisplay() -> void:
 	var sections: Array = []
 	if dialog.get_node("%Show").button_pressed:
 		sections = data_helper.get_sections(script_editor.get_current_script().get_path(), false)
-		_on_active_code_edit_height_changed()
 		
+	_on_active_code_edit_height_changed()
 	display.update(
 		_get_active_code_edit(),
 		sections
@@ -282,7 +280,6 @@ func _add_section_to_tree(tree: Tree, section: Section) -> void:
 	return
 
 
-
 ## Updates data when a in-editor file is manipulated
 ## (Move or Rename)
 func _on_FileSystemDock_files_moved(old_file: String, new_file: String) -> void:
@@ -321,18 +318,12 @@ func _on_addon_button_toggled(button_pressed: bool) -> void:
 
 ## Handles shortcuts when the main UI (Dialog) is shown
 func _on_Dialog_window_input(event: InputEvent) -> void:
-	if event is InputEventKey and OS.get_keycode_string(event.keycode) == "Ctrl":
-		if event.is_pressed():
-			_is_ctrl_held = true
-		else:
-			_is_ctrl_held = false
-		return
-
-	if event is InputEventKey and event.pressed:
-		if OS.get_keycode_string(event.keycode) == "U" and _is_ctrl_held:
+	if event is InputEventKey and event.is_pressed():
+		if event.keycode == KEY_U and event.is_ctrl_pressed():
 			addon_button.set_pressed(false) # Hides main UI (Dialog)
 			
-		if OS.get_keycode_string(event.keycode) == "J" and _is_ctrl_held:
+	if event is InputEventKey and event.is_pressed():
+		if event.keycode == KEY_J and event.is_ctrl_pressed():
 			dialog.get_node("%Show").set_pressed(
 				not dialog.get_node("%Show").button_pressed
 			)
@@ -477,18 +468,12 @@ func _on_ScriptEditor_editor_script_changed(script: Script) -> void:
 
 ## Handles shortcuts when the main UI (Dialog) is hidden
 func _on_active_code_edit_gui_input(event: InputEvent) -> void:
-	if event is InputEventKey and OS.get_keycode_string(event.keycode) == "Ctrl":
-		if event.is_pressed():
-			_is_ctrl_held = true
-		else:
-			_is_ctrl_held = false
-		return
+	if event is InputEventKey and event.is_pressed():
+		if event.keycode == KEY_U and event.is_ctrl_pressed():
+			addon_button.set_pressed(true) # Shows main UI (Dialog)
 			
 	if event is InputEventKey and event.is_pressed():
-		if OS.get_keycode_string(event.keycode) == "U" and _is_ctrl_held:
-			addon_button.set_pressed(true)
-			
-		if OS.get_keycode_string(event.keycode) == "J" and _is_ctrl_held:
+		if event.keycode == KEY_J and event.is_ctrl_pressed():
 			dialog.get_node("%Show").set_pressed(
 				not dialog.get_node("%Show").button_pressed
 			)
