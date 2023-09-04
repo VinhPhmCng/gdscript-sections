@@ -234,6 +234,11 @@ func _update_OverlayDisplay() -> void:
 		_get_active_code_edit(),
 		sections
 	)
+	
+	# Syncs scroll
+	_on_active_code_edit_VScrollBar_value_changed(
+		_get_active_code_edit().get_v_scroll_bar().value
+	)
 	return
 
 
