@@ -3,8 +3,9 @@
 		"res://addons/gdscript_sections/data/section773.tres"
 	],
 	"res://addons/gdscript_sections/gdscript_sections.gd": [
-		"res://addons/gdscript_sections/data/section1234.tres",
-		"res://addons/gdscript_sections/data/section1369.tres"
+		"res://addons/gdscript_sections/data/section1392.tres",
+		"res://addons/gdscript_sections/data/section1393.tres",
+		"res://addons/gdscript_sections/data/section1396.tres"
 	],
 	"res://addons/gdscript_sections/id_helper.gd": [
 		"res://addons/gdscript_sections/data/section1033.tres"

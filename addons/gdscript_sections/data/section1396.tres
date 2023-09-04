@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="Section" load_steps=2 format=3 uid="uid://d2srp8f4r7j3d"]
+
+[ext_resource type="Script" path="res://addons/gdscript_sections/section.gd" id="1_a13lw"]
+
+[resource]
+script = ExtResource("1_a13lw")
+text = "Private functions"
+location = 130

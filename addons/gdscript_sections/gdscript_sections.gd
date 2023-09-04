@@ -137,7 +137,6 @@ func _save_external_data() -> void:
 	return
 
 
-
 ## Returns Godot editor's icon
 func _get_editor_icon(name: StringName) -> Texture2D:
 	return (

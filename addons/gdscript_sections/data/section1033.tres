@@ -4,5 +4,5 @@
 
 [resource]
 script = ExtResource("1_c7rmj")
-text = "New "
+text = "TEST"
 location = 11
