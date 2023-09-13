@@ -48,6 +48,8 @@ func _enter_tree() -> void:
 	dialog.set_font_size(14)
 	
 	dialog.section_added.connect(_on_Dialog_section_added)
+	dialog.section_filter.connect(_on_Dialog_section_filter)
+	(dialog.get_node("%FilterSection") as LineEdit).right_icon = _get_editor_icon("Search")
 	
 	dialog.close_requested.connect(_on_Dialog_close_requested)
 	dialog.window_input.connect(_on_Dialog_window_input)
@@ -409,8 +411,30 @@ func _on_Dialog_section_added(text: String) -> void:
 	)
 
 	_update_ui_and_display()
+	_section_filter_ui_reset()
 	return
 
+## filters the current ui
+func _on_Dialog_section_filter(text: String) -> void:
+	_update_OverlayDisplay()
+	
+	var sections: Array = data_helper.get_sections(
+		script_editor.get_current_script().get_path(),
+		true
+	)
+
+	tree.clear()
+	var root := tree.create_item()
+
+	for section in sections:
+		if section.text.to_lower().begins_with(text.to_lower()):
+			_add_section_to_tree(tree, section)
+		
+	return
+
+func _section_filter_ui_reset() -> void:
+	(dialog.get_node("%FilterSection") as LineEdit).clear()
+	return
 
 ## Handles button presses of main UI (Tree)
 func _on_TreeItems_button_clicked(item: TreeItem, column: int, id: int, mouse_button_index: int) -> void:
@@ -432,8 +456,6 @@ func _on_TreeItems_button_clicked(item: TreeItem, column: int, id: int, mouse_bu
 			Section.remove_from_disk(item.get_metadata(2))
 			_update_ui_and_display()
 			
-		_:
-			pass
 	return
 
 
@@ -557,3 +579,4 @@ func _on_SectionDisplay_relocated(which: Control, event: InputEventMouseMotion) 
 	
 	section.update_to_disk()
 	return
+

@@ -4,10 +4,12 @@ extends Window
 ## The addon's main User Interface
 
 signal section_added(text: String)
+signal section_filter(text: String)
 
 @onready var main: VBoxContainer = $Background/MarginContainer/Main
 @onready var enable_prompt: CenterContainer = $Background/MarginContainer/EnablePrompt
 @onready var disable_prompt: CenterContainer = $Background/MarginContainer/DisablePrompt
+@onready var filter_section: LineEdit = %FilterSection
 @onready var add_section: LineEdit = %AddSection
 @onready var enable_prompt_label: Label = %EnablePromptLabel
 @onready var disable_prompt_label: Label = %DisablePromptLabel
@@ -47,6 +49,9 @@ func set_font_size(to: int) -> void:
 	disable_prompt_label.add_theme_font_size_override("font_size", to)
 	return
 
+func _handle_close_event() -> void:
+	filter_section.clear()
+	return
 
 # Handles buttons' signals - concerning visibility only
 
@@ -82,16 +87,20 @@ func _on_DisableAccept_pressed() -> void:
 	return
 
 
-## Handles adding a new section by "Enter"
-func _on_AddSection_text_submitted(new_text: String) -> void:
-	section_added.emit(new_text)
-	add_section.clear()
-	return
-
-
 ## Handles adding a new section by button
 func _on_AddButton_pressed() -> void:
 	if add_section.text.length() > 0:
 		section_added.emit(add_section.text)
 		add_section.clear()
+	return
+
+
+func _on_filter_text_changed(new_text: String) -> void:
+	section_filter.emit(new_text)
+	return
+
+
+func _on_visibility_changed() -> void:
+	if not self.visible:
+		_handle_close_event()
 	return
