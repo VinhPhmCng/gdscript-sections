@@ -301,12 +301,13 @@ func _filters_section(which: Section) -> bool:
 	# the characters don't have to be consecutive,
 	# but they must be in order.
 	var regex := RegEx.new()
+	var special_characters := ".^$*+-?()[]{}\\|/"
 	var pattern := ""
 	for character in filter_text.split():
-		if character >= "a" and character <= "z":
-			pattern += character
-		else:
+		if special_characters.contains(character):
 			pattern += "\\" + character
+		else:
+			pattern += character
 		pattern += ".*?"
 	regex.compile(pattern)
 	
