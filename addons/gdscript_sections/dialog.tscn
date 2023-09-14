@@ -38,6 +38,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Filter Sections"
+clear_button_enabled = true
 
 [node name="SearchContainer" type="HBoxContainer" parent="Background/MarginContainer/Main"]
 layout_mode = 2
@@ -47,6 +48,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "New Section"
+clear_button_enabled = true
 
 [node name="AddButton" type="Button" parent="Background/MarginContainer/Main/SearchContainer"]
 unique_name_in_owner = true
@@ -219,9 +221,8 @@ layout_mode = 2
 focus_mode = 0
 text = "Disable"
 
-[connection signal="visibility_changed" from="." to="." method="_on_visibility_changed"]
-[connection signal="text_changed" from="Background/MarginContainer/Main/FilterContainer/FilterSection" to="." method="_on_filter_text_changed"]
-[connection signal="text_submitted" from="Background/MarginContainer/Main/SearchContainer/AddSection" to="." method="_on_add_section_text_submitted"]
+[connection signal="text_changed" from="Background/MarginContainer/Main/FilterContainer/FilterSection" to="." method="_on_FilterSection_text_changed"]
+[connection signal="text_submitted" from="Background/MarginContainer/Main/SearchContainer/AddSection" to="." method="_on_AddSection_text_submitted"]
 [connection signal="pressed" from="Background/MarginContainer/Main/SearchContainer/AddButton" to="." method="_on_AddButton_pressed"]
 [connection signal="pressed" from="Background/MarginContainer/Main/ShowDisableContainer/Disable" to="." method="_on_Disable_pressed"]
 [connection signal="pressed" from="Background/MarginContainer/EnablePrompt/VBoxContainer/HBoxContainer/Enable" to="." method="_on_Enable_pressed"]

@@ -49,7 +49,7 @@ func _enter_tree() -> void:
 	dialog.set_font_size(14)
 	
 	dialog.section_added.connect(_on_Dialog_section_added)
-	dialog.section_filter.connect(_on_Dialog_section_filter)
+	dialog.sections_filtered.connect(_on_Dialog_sections_filtered)
 	filter_section = dialog.get_node("%FilterSection")
 	filter_section.right_icon = _get_editor_icon("Search")
 	
@@ -106,6 +106,7 @@ func _enter_tree() -> void:
 	Godot_base_control.theme_changed.connect(func():
 		background.add_theme_stylebox_override("panel", _get_editor_style("Content"))
 		addon_button.icon = _get_editor_icon("FileList")
+		filter_section.right_icon = _get_editor_icon("Search")
 		_update_OverlayDisplay()
 	)
 	
@@ -257,12 +258,12 @@ func _update_TreeItems(tree: Tree) -> void:
 	var root := tree.create_item()
 
 	for section in sections:
-		if _check_section_on_filter(section):
+		if _filters_section(section):
 			_add_section_to_tree(tree, section)
 	return
 
 
-## Add a TreeItem (row) with Goto button, Name field, and Delete button
+## Adds a TreeItem (row) with Goto button, Name field, and Delete button
 func _add_section_to_tree(tree: Tree, section: Section) -> void:
 	var root := tree.get_root()
 	var item := tree.create_item(root)
@@ -289,13 +290,27 @@ func _add_section_to_tree(tree: Tree, section: Section) -> void:
 	item.set_metadata(2, section.get_path())
 	return
 
-## Check if a section matches the current active filter
-func _check_section_on_filter(section: Section) -> bool:
+## Checks if a section matches the current active filter,
+func _filters_section(which: Section) -> bool:
 	var filter_text := filter_section.text.strip_edges().to_lower()
-	var section_text := section.text.strip_edges().to_lower()
+	var section_text := which.text.strip_edges().to_lower()
 	if filter_text.is_empty(): 
 		return true
-	return section_text.contains(filter_text)
+	
+	# Uses RegEx to check whether section_text contains filter_text, as in
+	# the characters don't have to be consecutive,
+	# but they must be in order.
+	var regex := RegEx.new()
+	var pattern := ""
+	for character in filter_text.split():
+		pattern += character
+		pattern += ".*?"
+	regex.compile(pattern)
+	
+	var result := regex.search(section_text)
+	if result:
+		return true
+	return false
 
 
 ## Updates data when a in-editor file is manipulated
@@ -425,13 +440,10 @@ func _on_Dialog_section_added(text: String) -> void:
 	return
 
 ## filters the current ui
-func _on_Dialog_section_filter(_text: String) -> void:
+func _on_Dialog_sections_filtered(_text: String) -> void:
 	_update_ui_and_display()
 	return
 
-func _section_filter_ui_reset() -> void:
-	filter_section.clear()
-	return
 
 ## Handles button presses of main UI (Tree)
 func _on_TreeItems_button_clicked(item: TreeItem, column: int, id: int, mouse_button_index: int) -> void:
