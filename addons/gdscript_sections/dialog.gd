@@ -87,6 +87,12 @@ func _on_DisableAccept_pressed() -> void:
 	return
 
 
+func _on_add_section_text_submitted(new_text: String) -> void:
+	section_added.emit(new_text)
+	add_section.clear()
+	return
+	
+	
 ## Handles adding a new section by button
 func _on_AddButton_pressed() -> void:
 	if add_section.text.length() > 0:

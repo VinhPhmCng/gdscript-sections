@@ -221,6 +221,7 @@ text = "Disable"
 
 [connection signal="visibility_changed" from="." to="." method="_on_visibility_changed"]
 [connection signal="text_changed" from="Background/MarginContainer/Main/FilterContainer/FilterSection" to="." method="_on_filter_text_changed"]
+[connection signal="text_submitted" from="Background/MarginContainer/Main/SearchContainer/AddSection" to="." method="_on_add_section_text_submitted"]
 [connection signal="pressed" from="Background/MarginContainer/Main/SearchContainer/AddButton" to="." method="_on_AddButton_pressed"]
 [connection signal="pressed" from="Background/MarginContainer/Main/ShowDisableContainer/Disable" to="." method="_on_Disable_pressed"]
 [connection signal="pressed" from="Background/MarginContainer/EnablePrompt/VBoxContainer/HBoxContainer/Enable" to="." method="_on_Enable_pressed"]
