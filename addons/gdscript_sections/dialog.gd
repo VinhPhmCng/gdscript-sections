@@ -50,8 +50,7 @@ func set_font_size(to: int) -> void:
 	return
 
 func _handle_close_event() -> void:
-	filter_section.clear()
-	return
+	pass
 
 # Handles buttons' signals - concerning visibility only
 

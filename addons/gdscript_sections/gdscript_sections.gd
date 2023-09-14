@@ -20,6 +20,7 @@ var display: Control = OverlayDisplay.instantiate()
 var tree: Tree # The UI display of sections of the active script
 var addon_button := Button.new()
 var data_helper: DataHelper = DataHelper.new()
+var filter_section: LineEdit
 
 
 ## Initialization of the plugin goes here.
@@ -49,7 +50,8 @@ func _enter_tree() -> void:
 	
 	dialog.section_added.connect(_on_Dialog_section_added)
 	dialog.section_filter.connect(_on_Dialog_section_filter)
-	(dialog.get_node("%FilterSection") as LineEdit).right_icon = _get_editor_icon("Search")
+	filter_section = dialog.get_node("%FilterSection")
+	filter_section.right_icon = _get_editor_icon("Search")
 	
 	dialog.close_requested.connect(_on_Dialog_close_requested)
 	dialog.window_input.connect(_on_Dialog_window_input)
@@ -255,7 +257,8 @@ func _update_TreeItems(tree: Tree) -> void:
 	var root := tree.create_item()
 
 	for section in sections:
-		_add_section_to_tree(tree, section)
+		if _check_section_on_filter(section):
+			_add_section_to_tree(tree, section)
 	return
 
 
@@ -285,6 +288,14 @@ func _add_section_to_tree(tree: Tree, section: Section) -> void:
 	item.set_text_alignment(2, HORIZONTAL_ALIGNMENT_CENTER)
 	item.set_metadata(2, section.get_path())
 	return
+
+## Check if a section matches the current active filter
+func _check_section_on_filter(section: Section) -> bool:
+	var filter_text := filter_section.text.strip_edges().to_lower()
+	var section_text := section.text.strip_edges().to_lower()
+	if filter_text.is_empty(): 
+		return true
+	return section_text.contains(filter_text)
 
 
 ## Updates data when a in-editor file is manipulated
@@ -411,29 +422,15 @@ func _on_Dialog_section_added(text: String) -> void:
 	)
 
 	_update_ui_and_display()
-	_section_filter_ui_reset()
 	return
 
 ## filters the current ui
-func _on_Dialog_section_filter(text: String) -> void:
-	_update_OverlayDisplay()
-	
-	var sections: Array = data_helper.get_sections(
-		script_editor.get_current_script().get_path(),
-		true
-	)
-
-	tree.clear()
-	var root := tree.create_item()
-
-	for section in sections:
-		if section.text.to_lower().begins_with(text.to_lower()):
-			_add_section_to_tree(tree, section)
-		
+func _on_Dialog_section_filter(_text: String) -> void:
+	_update_ui_and_display()
 	return
 
 func _section_filter_ui_reset() -> void:
-	(dialog.get_node("%FilterSection") as LineEdit).clear()
+	filter_section.clear()
 	return
 
 ## Handles button presses of main UI (Tree)
