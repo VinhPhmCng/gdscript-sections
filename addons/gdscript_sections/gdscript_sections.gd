@@ -303,7 +303,10 @@ func _filters_section(which: Section) -> bool:
 	var regex := RegEx.new()
 	var pattern := ""
 	for character in filter_text.split():
-		pattern += character
+		if character >= "a" and character <= "z":
+			pattern += character
+		else:
+			pattern += "\\" + character
 		pattern += ".*?"
 	regex.compile(pattern)
 	
