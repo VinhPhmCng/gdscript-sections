@@ -112,6 +112,9 @@ func _enter_tree() -> void:
 	
 	# OverlayDisplay's signals
 	display.section_display_relocated.connect(_on_SectionDisplay_relocated)
+	
+	# Updates
+	_update_OverlayDisplay()
 	return
 	
 
@@ -241,9 +244,8 @@ func _update_OverlayDisplay() -> void:
 	)
 	
 	# Syncs scroll
-	_on_active_code_edit_VScrollBar_value_changed(
-		_get_active_code_edit().get_v_scroll_bar().value
-	)
+	# The 0.1 seconds delay is to ensure the active CodeEdit's VScrollBar's value is correct
+	_syncs_scroll()
 	return
 
 
@@ -315,6 +317,16 @@ func _filters_section(which: Section) -> bool:
 	if result:
 		return true
 	return false
+
+# Synchronizes scroll values of OverlayDisplay and the active CodeEdit
+# The 0.1 seconds delay is to ensure the active CodeEdit's VScrollBar's value is correct
+func _syncs_scroll() -> void:
+	get_tree().create_timer(0.1).timeout.connect(func():
+		_on_active_code_edit_VScrollBar_value_changed(
+			_get_active_code_edit().get_v_scroll_bar().value
+		)
+	)
+	return
 
 
 ## Updates data when a in-editor file is manipulated
@@ -443,9 +455,9 @@ func _on_Dialog_section_added(text: String) -> void:
 	_update_ui_and_display()
 	return
 
-## filters the current ui
+## Filters the sections
 func _on_Dialog_sections_filtered(_text: String) -> void:
-	_update_ui_and_display()
+	_update_TreeItems(tree)
 	return
 
 
@@ -499,10 +511,7 @@ func _on_ScriptEditor_editor_script_changed(script: Script) -> void:
 	_on_active_code_edit_height_changed()
 	_update_ui_and_display()
 
-	# Syncs scroll
-	_on_active_code_edit_VScrollBar_value_changed(
-		_get_active_code_edit().get_v_scroll_bar().value
-	)
+	_syncs_scroll()
 	return
 
 
@@ -532,16 +541,13 @@ func _on_active_code_edit_height_changed() -> void:
 	
 	sections_display.set_custom_minimum_size(new_size)
 	sections_display.set_deferred("size", new_size)
-	scroll.get_v_scroll_bar().set_step(
-		_get_active_code_edit().get_v_scroll_bar().get_step()
-	)
 	return
 	
 
 ## Syncs scrolling of OverlayDisplay to that of active CodeEdit
 func _on_active_code_edit_VScrollBar_value_changed(value: float) -> void:
 	var scroll: ScrollContainer = display.get_node("ScrollContainer")
-	var sections_display: Control = display.get_node("%SectionsDisplay")
+#	var sections_display: Control = display.get_node("%SectionsDisplay")
 	
 	var new := value * _get_active_code_edit().get_line_height()
 	

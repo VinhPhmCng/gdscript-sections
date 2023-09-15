@@ -62,4 +62,3 @@ func _on_SectionDisplay_Main_gui_input(event: InputEvent, which: Control) -> voi
 		
 		section_display_relocated.emit(which, event)
 	return
-
