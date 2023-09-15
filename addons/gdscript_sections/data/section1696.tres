@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="Section" load_steps=2 format=3 uid="uid://c6oomgyefl814"]
+
+[ext_resource type="Script" path="res://addons/gdscript_sections/section.gd" id="1_tq458"]
+
+[resource]
+script = ExtResource("1_tq458")
+text = "Virtual functions"
+location = 24

@@ -20,6 +20,7 @@ var display: Control = OverlayDisplay.instantiate()
 var tree: Tree # The UI display of sections of the active script
 var addon_button := Button.new()
 var data_helper: DataHelper = DataHelper.new()
+var filter_section: LineEdit
 
 
 ## Initialization of the plugin goes here.
@@ -48,6 +49,9 @@ func _enter_tree() -> void:
 	dialog.set_font_size(14)
 	
 	dialog.section_added.connect(_on_Dialog_section_added)
+	dialog.sections_filtered.connect(_on_Dialog_sections_filtered)
+	filter_section = dialog.get_node("%FilterSection")
+	filter_section.right_icon = _get_editor_icon("Search")
 	
 	dialog.close_requested.connect(_on_Dialog_close_requested)
 	dialog.window_input.connect(_on_Dialog_window_input)
@@ -102,6 +106,7 @@ func _enter_tree() -> void:
 	Godot_base_control.theme_changed.connect(func():
 		background.add_theme_stylebox_override("panel", _get_editor_style("Content"))
 		addon_button.icon = _get_editor_icon("FileList")
+		filter_section.right_icon = _get_editor_icon("Search")
 		_update_OverlayDisplay()
 	)
 	
@@ -253,11 +258,12 @@ func _update_TreeItems(tree: Tree) -> void:
 	var root := tree.create_item()
 
 	for section in sections:
-		_add_section_to_tree(tree, section)
+		if _filters_section(section):
+			_add_section_to_tree(tree, section)
 	return
 
 
-## Add a TreeItem (row) with Goto button, Name field, and Delete button
+## Adds a TreeItem (row) with Goto button, Name field, and Delete button
 func _add_section_to_tree(tree: Tree, section: Section) -> void:
 	var root := tree.get_root()
 	var item := tree.create_item(root)
@@ -283,6 +289,32 @@ func _add_section_to_tree(tree: Tree, section: Section) -> void:
 	item.set_text_alignment(2, HORIZONTAL_ALIGNMENT_CENTER)
 	item.set_metadata(2, section.get_path())
 	return
+
+## Checks if a section matches the current active filter,
+func _filters_section(which: Section) -> bool:
+	var filter_text := filter_section.text.strip_edges().to_lower()
+	var section_text := which.text.strip_edges().to_lower()
+	if filter_text.is_empty(): 
+		return true
+	
+	# Uses RegEx to check whether section_text contains filter_text, as in
+	# the characters don't have to be consecutive,
+	# but they must be in order.
+	var regex := RegEx.new()
+	var special_characters := ".^$*+-?()[]{}\\|/"
+	var pattern := ""
+	for character in filter_text.split():
+		if special_characters.contains(character):
+			pattern += "\\" + character
+		else:
+			pattern += character
+		pattern += ".*?"
+	regex.compile(pattern)
+	
+	var result := regex.search(section_text)
+	if result:
+		return true
+	return false
 
 
 ## Updates data when a in-editor file is manipulated
@@ -411,6 +443,11 @@ func _on_Dialog_section_added(text: String) -> void:
 	_update_ui_and_display()
 	return
 
+## filters the current ui
+func _on_Dialog_sections_filtered(_text: String) -> void:
+	_update_ui_and_display()
+	return
+
 
 ## Handles button presses of main UI (Tree)
 func _on_TreeItems_button_clicked(item: TreeItem, column: int, id: int, mouse_button_index: int) -> void:
@@ -432,8 +469,6 @@ func _on_TreeItems_button_clicked(item: TreeItem, column: int, id: int, mouse_bu
 			Section.remove_from_disk(item.get_metadata(2))
 			_update_ui_and_display()
 			
-		_:
-			pass
 	return
 
 
@@ -557,3 +592,4 @@ func _on_SectionDisplay_relocated(which: Control, event: InputEventMouseMotion) 
 	
 	section.update_to_disk()
 	return
+

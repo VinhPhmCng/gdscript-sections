@@ -18,6 +18,25 @@ config/icon="res://addons/gdscript_sections/logo.png"
 
 enabled=PackedStringArray("res://addons/gdscript_sections/plugin.cfg")
 
+[input]
+
+"virtual functions"={
+"deadzone": 0.5,
+"events": []
+}
+"Public functions"={
+"deadzone": 0.5,
+"events": []
+}
+"Another irrelevant"={
+"deadzone": 0.5,
+"events": []
+}
+hello={
+"deadzone": 0.5,
+"events": []
+}
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
